@@ -19,8 +19,9 @@ npm run preview   # sirve /dist para comprobarla
 | `src/data/content.js` | **Todo el texto**: las 15 estafas, los 10 consejos, el juego y las fuentes. Es lo que hay que revisar y reescribir con vuestras palabras. |
 | `src/webgl/Scene.js` | La escena 3D: el cristal (tu identidad digital), los fragmentos, las partículas, el texto 3D y el post-procesado. |
 | `src/webgl/shaders.js` | Los shaders GLSL: el cristal que se rompe, las partículas y el efecto de "señal interceptada". |
-| `src/ui/dossier.js` | La página de cada estafa (se abre con `#/phishing`, `#/bizum`, etc.). |
+| `src/ui/dossier.js` | La página de cada estafa (se abre con `#/phishing`, `#/bizum`, etc.), con el diagrama animado "Ruta del ataque". |
 | `src/ui/quiz.js` | El minijuego "¿Estafa o legítimo?". |
+| `src/ui/anatomy.js` | Motion graphic "Anatomía de una estafa": secuencia controlada por el scroll (tipografía cinética, SMS anotado, robo de datos y defensa). |
 | `src/ui/interactions.js` | Cursor, texto que se descifra, botones magnéticos y animaciones de entrada. |
 | `src/main.js` | Lo une todo: scroll suave, secciones, preloader e intro. |
 

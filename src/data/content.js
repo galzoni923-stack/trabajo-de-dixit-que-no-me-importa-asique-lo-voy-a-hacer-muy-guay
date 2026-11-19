@@ -435,6 +435,26 @@ export const scams = [
   },
 ]
 
+// Pasos cortos para el diagrama animado "Ruta del ataque" de cada dossier
+const flows = {
+  phishing: ['Correo falso', 'Prisa y miedo', 'Web clonada', 'Datos robados'],
+  vishing: ['SMS o llamada', 'Falso agente', 'Te pide el código', 'Cuenta vaciada'],
+  skimming: ['Cajero trucado', 'Copian la banda', 'Graban tu PIN', 'Tarjeta clonada'],
+  qrshing: ['QR pegado encima', 'Web de pago falsa', 'Metes tu tarjeta', 'Cobro fraudulento'],
+  simswapping: ['Reúnen tus datos', 'Piden un duplicado', 'Te quedas sin línea', 'Entran en tu banco'],
+  ransomware: ['Archivo infectado', 'Se ejecuta oculto', 'Cifra tus archivos', 'Piden un rescate'],
+  deepfakes: ['Copian tu voz y cara', 'La IA la clona', 'Mensaje falso', 'Engaño o chantaje'],
+  compraventa: ['Comprador "ideal"', 'Sales de la app', 'Enlace de cobro falso', 'Te vacían la tarjeta'],
+  alquileres: ['Piso chollo', 'Dueño "fuera"', 'Pagas la fianza', 'El piso no existe'],
+  bizum: ['"Te envío el Bizum"', 'Llega una solicitud', 'La aceptas', 'Pagas tú'],
+  empleo: ['Trabajo fácil', 'Primeros pagos', '"Invierte" para seguir', 'Pierdes o eres mula'],
+  paqueteria: ['SMS de paquete', 'Tasa de 1,99 €', 'Web clonada', 'Cargos mayores'],
+  redes: ['Premio o votación', 'Te piden un código', 'Roban tu cuenta', 'Engañan a tus amigos'],
+  tiendas: ['Anuncio chollo', 'Tienda clon', 'Pagas', 'No llega nada'],
+  inversion: ['Mentor en redes', 'Ganancias falsas', 'Inviertes más', 'Desaparecen'],
+}
+scams.forEach((s) => (s.flow = flows[s.id]))
+
 export const tips = [
   { t: 'Verificación en dos pasos', d: 'Actívala en el correo, las redes y el banco. Aunque roben tu contraseña, no podrán entrar.' },
   { t: 'Una contraseña distinta para cada cuenta', d: 'Usa frases largas y un gestor de contraseñas. Si filtran una, el resto sigue a salvo.' },

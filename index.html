@@ -97,6 +97,70 @@
         </div>
       </section>
 
+      <!-- 2.5 · ANATOMÍA DE UNA ESTAFA (motion graphic con scroll) -->
+      <section id="anatomia" class="anatomy" data-section="anatomia" data-label="ANATOMÍA DE UNA ESTAFA">
+        <div class="anatomy__pin">
+          <p class="kicker mono anatomy__kicker">[✦] — Anatomía de una estafa · Caso: paquetería</p>
+
+          <!-- Escena A · tipografía cinética -->
+          <div class="kt kt--a" aria-hidden="true">
+            <div class="kt__row"><span class="kt__w">Una estafa</span> <span class="kt__w">no necesita</span></div>
+            <div class="kt__row"><span class="kt__w kt__w--strike">hackers.</span></div>
+            <div class="kt__row"><span class="kt__w">Solo necesita</span> <span class="kt__w">que tengas</span></div>
+            <div class="kt__row"><span class="kt__w kt__w--danger">PRISA.</span></div>
+          </div>
+
+          <!-- Escena B · el mensaje, anotado -->
+          <div class="anatomy__stage">
+            <svg class="anatomy__lines" aria-hidden="true">
+              <path data-line="1" /><path data-line="2" /><path data-line="3" />
+            </svg>
+            <div class="callout callout--l1" data-callout="1">
+              <span class="callout__n mono">01 · Cantidad pequeña</span>
+              <p>1,99 € no da miedo. Pagas sin pensarlo y así consiguen tu tarjeta.</p>
+            </div>
+            <div class="callout callout--l2" data-callout="2">
+              <span class="callout__n mono">02 · Urgencia</span>
+              <p>Un plazo inventado para que actúes antes de pensar.</p>
+            </div>
+            <div class="callout callout--r1" data-callout="3">
+              <span class="callout__n mono">03 · Dominio falso</span>
+              <p>Lleva "correos" en el nombre, pero la web oficial es correos.es.</p>
+            </div>
+
+            <div class="sms">
+              <div class="sms__head mono"><span class="sms__app"><i></i>SMS · Correos</span><span>09:41</span></div>
+              <p class="sms__body">Su paquete no ha podido ser entregado. Abone <span class="hl" data-flag="1">1,99&nbsp;€</span> de gastos de envío <span class="hl" data-flag="2">antes de 24&nbsp;h</span> o será devuelto: <span class="hl hl--link" data-flag="3">correos-es-envio.com/pago</span></p>
+              <div class="tap" aria-hidden="true"></div>
+            </div>
+
+            <div class="leak" aria-hidden="true">
+              <p class="leak__title mono">⚠ Datos enviados a servidor desconocido</p>
+              <div class="leak__row"><span class="mono">Tarjeta</span><b class="leak__val" data-final="4921 8830 1174 0562">0000 0000 0000 0000</b></div>
+              <div class="leak__row"><span class="mono">Caducidad</span><b class="leak__val" data-final="08 / 29">00 / 00</b></div>
+              <div class="leak__row"><span class="mono">CVV</span><b class="leak__val" data-final="417">000</b></div>
+              <div class="leak__row"><span class="mono">Destino</span><b class="leak__val" data-final="185.■■.■■.12 · ??">0.0.0.0</b></div>
+            </div>
+          </div>
+
+          <!-- Escena C · la solución -->
+          <div class="kt kt--c" aria-hidden="true">
+            <div class="kt__row"><span class="kt__w">Párate.</span></div>
+            <div class="kt__row"><span class="kt__w">Piensa.</span></div>
+            <div class="kt__row"><span class="kt__w kt__w--ok">Comprueba.</span></div>
+            <p class="kt__foot">Cinco segundos de duda valen más que cualquier antivirus.</p>
+          </div>
+
+          <div class="anatomy__progress mono" aria-hidden="true">
+            <span data-phase="0">Gancho</span><span data-phase="1">Mensaje</span><span data-phase="2">Señales</span><span data-phase="3">Robo</span><span data-phase="4">Defensa</span>
+            <div class="anatomy__bar"><i></i></div>
+          </div>
+
+          <!-- Versión accesible (lectores de pantalla) -->
+          <p class="sr-only">Ejemplo de SMS fraudulento de paquetería: "Su paquete no ha podido ser entregado. Abone 1,99 € de gastos de envío antes de 24 h o será devuelto: correos-es-envio.com/pago". Señales de alarma: una cantidad pequeña para que pagues sin pensar, urgencia inventada y un dominio falso que no es correos.es. Si pulsas y pagas, tus datos de tarjeta llegan al estafador. La defensa: párate, piensa y comprueba.</p>
+        </div>
+      </section>
+
       <!-- 3 · BLOQUE 1 -->
       <section id="delitos" class="block" data-section="delitos" data-label="DELITOS INFORMÁTICOS">
         <header class="block__head">
@@ -217,6 +281,14 @@
         <p class="dossier__tag mono"></p>
         <h2 class="dossier__title" id="dossier-title"></h2>
         <p class="dossier__short"></p>
+        <div class="route">
+          <p class="dsec__h mono">00 · Ruta del ataque</p>
+          <div class="route__track">
+            <div class="route__line"><i></i></div>
+            <div class="route__pulse" aria-hidden="true"></div>
+            <ol class="route__nodes"></ol>
+          </div>
+        </div>
         <div class="dossier__grid">
           <section class="dsec dsec--que">
             <h3 class="dsec__h mono">01 · Qué es</h3>

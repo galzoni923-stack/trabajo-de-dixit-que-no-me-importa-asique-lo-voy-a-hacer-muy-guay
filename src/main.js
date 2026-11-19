@@ -8,15 +8,17 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
 import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin'
+import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin'
 import Lenis from 'lenis'
 
 import { scams, quiz } from './data/content.js'
 import { renderContent, pad } from './ui/render.js'
 import { Dossier } from './ui/dossier.js'
 import { initQuiz } from './ui/quiz.js'
+import { createAnatomy } from './ui/anatomy.js'
 import { initCursor, initScramble, initMagnetic, initCards, initReveals, scrambleTo } from './ui/interactions.js'
 
-gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin)
+gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin, DrawSVGPlugin)
 
 const html = document.documentElement
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -149,6 +151,10 @@ function initScroll() {
   mm.add({ desktop: '(min-width: 821px)', mobile: '(max-width: 820px)' }, (ctx) => {
     const { desktop } = ctx.conditions
     const fraudes = document.getElementById('fraudes')
+    const cleanups = []
+
+    // Motion graphic "Anatomía de una estafa" (va primero: está antes en la página)
+    cleanups.push(createAnatomy({ scene, desktop }))
 
     if (desktop) {
       const track = fraudes.querySelector('.cards--track')
@@ -172,7 +178,7 @@ function initScroll() {
       const skew = gsap.quickTo(cards, 'skewX', { duration: 0.5, ease: 'power3' })
       const onScroll = ({ velocity }) => skew(gsap.utils.clamp(-8, 8, -velocity * 0.25))
       lenis.on('scroll', onScroll)
-      ctx.add(() => () => lenis.off('scroll', onScroll))
+      cleanups.push(() => lenis.off('scroll', onScroll))
     }
 
     sections.forEach((sec) => {
@@ -184,6 +190,8 @@ function initScroll() {
         onToggle: (self) => self.isActive && activate(sec),
       })
     })
+
+    return () => cleanups.forEach((fn) => fn())
   })
 }
 
