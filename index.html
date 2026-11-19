@@ -191,28 +191,38 @@
         <div class="quiz__intro">
           <p class="kicker mono">[03] — Ponte a prueba</p>
           <h2 class="quiz__title" data-split>¿Estafa o legítimo?</h2>
-          <p class="quiz__lead" data-split>Seis mensajes inspirados en casos reales. Algunos son trampas, otros no. Decide y descubre en qué te tienes que fijar.</p>
-          <div class="quiz__score mono"><span class="quiz__step">01 / 06</span><span class="quiz__points">ACIERTOS 0</span></div>
+          <p class="quiz__lead" data-split>Ocho mensajes inspirados en casos reales: SMS, WhatsApp, llamadas, correos... Algunos son trampas, otros no. Desliza a la izquierda si es una estafa y a la derecha si es legítimo.</p>
+          <div class="quiz__score mono"><span class="quiz__step">01 / 08</span><span class="quiz__points">ACIERTOS 0</span></div>
+          <p class="quiz__keys mono"><kbd>←</kbd> estafa <kbd>→</kbd> legítimo <kbd>↵</kbd> siguiente</p>
         </div>
+
         <div class="quiz__stage">
           <div class="phone">
-            <div class="phone__notch"></div>
+            <div class="phone__glare" aria-hidden="true"></div>
+            <div class="phone__island" aria-hidden="true"></div>
             <div class="phone__screen">
-              <div class="msg">
-                <div class="msg__head mono"><span class="msg__channel"></span><span class="msg__time">ahora</span></div>
-                <div class="msg__from"></div>
-                <div class="msg__body"></div>
+              <div class="pstatus" aria-hidden="true">
+                <span class="pstatus__time">09:41</span>
+                <span class="pstatus__icons">
+                  <svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" /><rect x="5" y="5.5" width="3" height="6.5" rx="1" /><rect x="10" y="3" width="3" height="9" rx="1" /><rect x="15" y="0" width="3" height="12" rx="1" /></svg>
+                  <svg viewBox="0 0 16 12"><path d="M8 11.5 5.6 8.9a3.4 3.4 0 0 1 4.8 0zM3.4 6.7a6.6 6.6 0 0 1 9.2 0l-1.1 1.1a5 5 0 0 0-7 0zM1.2 4.5a9.7 9.7 0 0 1 13.6 0l-1.1 1.1a8.2 8.2 0 0 0-11.4 0z" /></svg>
+                  <svg viewBox="0 0 27 12"><rect x="0.5" y="0.5" width="23" height="11" rx="3.5" fill="none" stroke-opacity="0.4" /><rect x="2.5" y="2.5" width="16" height="7" rx="2" /><rect x="24.5" y="4" width="2" height="4" rx="1" fill-opacity="0.4" /></svg>
+                </span>
               </div>
-              <div class="verdict" aria-live="polite">
-                <span class="verdict__tag mono"></span>
-                <p class="verdict__why"></p>
+              <div class="psegs" aria-hidden="true"></div>
+              <div class="pbanner" aria-hidden="true"></div>
+              <div class="pslot" aria-live="polite"></div>
+              <div class="pstamp pstamp--scam" aria-hidden="true">ESTAFA</div>
+              <div class="pstamp pstamp--legit" aria-hidden="true">LEGÍTIMO</div>
+              <div class="psheet" role="region" aria-label="Corrección" data-lenis-prevent></div>
+              <div class="presult" aria-live="polite"></div>
+              <div class="pactions">
+                <button class="pbtn pbtn--scam" data-answer="scam" data-hover aria-label="Es una estafa"><span class="pbtn__i">✕</span><span class="pbtn__l mono">Estafa</span></button>
+                <span class="pactions__hint mono" aria-hidden="true"><b>‹</b> desliza <b>›</b></span>
+                <button class="pbtn pbtn--legit" data-answer="legit" data-hover aria-label="Es legítimo"><span class="pbtn__i">✓</span><span class="pbtn__l mono">Legítimo</span></button>
               </div>
+              <div class="phome" aria-hidden="true"></div>
             </div>
-          </div>
-          <div class="quiz__actions">
-            <button class="qbtn qbtn--scam" data-answer="scam" data-hover><span class="mono">Es estafa</span></button>
-            <button class="qbtn qbtn--legit" data-answer="legit" data-hover><span class="mono">Es legítimo</span></button>
-            <button class="qbtn qbtn--next mono" data-next data-hover hidden>Siguiente →</button>
           </div>
         </div>
       </section>

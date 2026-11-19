@@ -28,7 +28,7 @@ const PRESETS = {
   anatomia:   { coreX: 0,    coreY: 0,    coreScale: 0.55, fracture: 0.5,  camZ: 8.5, hue: 0.54, danger: 0.5,  ring: 0, words: 0, shell: 0.2, glow: 1.1, spin: 1.2 },
   delitos:    { coreX: 2.3,  coreY: 0,    coreScale: 0.8,  fracture: 0.8,  camZ: 7.0, hue: 0.54, danger: 0.9,  ring: 1, words: 0, shell: 0.15, glow: 1.3, spin: 1.6 },
   fraudes:    { coreX: 3.0,  coreY: 1.25, coreScale: 0.55, fracture: 0.85, camZ: 7.6, hue: 0.07, danger: 0.55, ring: 0, words: 0, shell: 0.1, glow: 1.3, spin: 2 },
-  detecta:    { coreX: 1.75, coreY: 0,    coreScale: 0.72, fracture: 0.45, camZ: 7.0, hue: 0.72, danger: 0.2,  ring: 0, words: 0, shell: 0.3, glow: 1,   spin: 1 },
+  detecta:    { coreX: 3.0,  coreY: -0.4, coreScale: 0.62, fracture: 0.45, camZ: 7.0, hue: 0.72, danger: 0.2,  ring: 0, words: 0, shell: 0.3, glow: 1,   spin: 1 },
   consejos:   { coreX: 2.55, coreY: 0,    coreScale: 0.78, fracture: 0,    camZ: 6.8, hue: 0.5,  danger: 0,    ring: 0, words: 0, shell: 0.9, glow: 1.6, spin: 0.5 },
   fuentes:    { coreX: 0,    coreY: 0.6,  coreScale: 0.55, fracture: 0.12, camZ: 10,  hue: 0.55, danger: 0,    ring: 0, words: 0, shell: 0.4, glow: 1.2, spin: 0.4 },
 }
