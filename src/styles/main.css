@@ -257,7 +257,7 @@ section { position: relative; padding: 18vh var(--pad); }
   background-size: 250% 100%; background-position: var(--gx) 0;
 }
 .phone__island { position: absolute; top: 22px; left: 50%; z-index: 15; width: 22%; height: 27px; transform: translateX(-50%); background: #000; border-radius: 20px; }
-@container (max-width: 380px) { .pstatus { padding: 17px 10px 0 24px; font-size: 13px; } .pstatus__icons svg { height: 10px; } }
+@container (max-width: 380px) { .phone__screen .pstatus { padding: 17px 14px 0 24px; font-size: 13px; } .phone__screen .pstatus__icons svg { height: 10px; } }
 .phone__screen {
   position: relative; height: 100%; border-radius: 44px; overflow: hidden; overflow: clip; container-type: inline-size;
   background: radial-gradient(130% 70% at 50% 0%, #0d1828 0%, #03050a 70%);
