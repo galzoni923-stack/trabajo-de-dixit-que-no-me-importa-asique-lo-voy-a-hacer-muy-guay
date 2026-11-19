@@ -1,6 +1,7 @@
 import gsap from 'gsap'
 import { pad } from './render.js'
 import { scams } from '../data/content.js'
+import { icon } from './icons.js'
 
 // ─────────────────────────────────────────────────────────────
 //  Mini-juego "¿Estafa o legítimo?" dentro de un móvil realista.
@@ -82,7 +83,7 @@ function render(q) {
           <div class="pcall__av"><i></i><i></i><span>${esc(initial(q.name))}</span></div>
           <b class="pcall__name">${m(q.name)}</b>
           <div class="pcall__live pbubble"><span class="pcall__tag">● Transcripción en directo</span><p>${m(q.body)}</p></div>
-          <div class="pcall__btns"><span class="pcall__btn pcall__btn--no">✕</span><span class="pcall__btn pcall__btn--yes">✆</span></div>
+          <div class="pcall__btns"><span class="pcall__btn pcall__btn--no">${icon('x')}</span><span class="pcall__btn pcall__btn--yes">${icon('phone')}</span></div>
         </div>`
     case 'email':
       return `
@@ -129,7 +130,7 @@ export function initQuiz(items, scene) {
 
   const hud = () => {
     $('.quiz__step').textContent = `${pad(Math.min(i + 1, items.length))} / ${pad(items.length)}`
-    $('.quiz__points').textContent = `ACIERTOS ${score}`
+    $('.quiz__points').textContent = `Aciertos ${score}`
     segs.forEach((s, k) => {
       s.className = answers[k] === undefined ? (k === i ? 'is-cur' : '') : answers[k] ? 'is-ok' : 'is-ko'
     })
@@ -169,7 +170,7 @@ export function initQuiz(items, scene) {
     const typing = card.querySelector('.ptyping')
     const bubble = card.querySelector('.pbubble')
     if (typing) {
-      tl.fromTo(typing, { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(2.5)' })
+      tl.fromTo(typing, { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'expo.out' })
         .to(typing, { opacity: 0, scale: 0.5, duration: 0.2 }, '+=0.75')
         .set(typing, { display: 'none' })
     }
@@ -178,7 +179,7 @@ export function initQuiz(items, scene) {
       tl.fromTo(
         bubble,
         { opacity: 0, y: 18, scale: 0.9, transformOrigin: '0% 100%' },
-        { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: 'back.out(1.7)' },
+        { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: 'expo.out' },
         typing ? '>' : '-=0.2'
       )
     }
@@ -200,11 +201,11 @@ export function initQuiz(items, scene) {
     const tl = gsap.timeline()
     tl.to(other, { opacity: 0, duration: 0.15 })
       .to(card, { x: dir * 48, rotation: dir * 5, duration: 0.22, ease: 'power2.out' }, 0)
-      .to(stamps[choice], { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(3)' }, 0)
-      .to(card, { x: 0, rotation: 0, duration: 0.7, ease: 'elastic.out(1, 0.5)' })
+      .to(stamps[choice], { opacity: 1, scale: 1, duration: 0.25, ease: 'expo.out' }, 0)
+      .to(card, { x: 0, rotation: 0, duration: 0.45, ease: 'expo.out' })
 
     if (!ok) {
-      tl.fromTo(phone, { x: -10 }, { x: 0, duration: 0.6, ease: 'elastic.out(1, 0.2)' }, 0.3)
+      tl.to(phone, { keyframes: { x: [0, -6, 5, -3, 0] }, duration: 0.35, ease: 'power2.out' }, 0.3)
       navigator.vibrate?.([50, 40, 50])
     }
 
@@ -222,12 +223,12 @@ export function initQuiz(items, scene) {
     sheet.innerHTML = `
       <div class="psheet__handle"></div>
       <div class="psheet__in">
-        <span class="psheet__tag mono ${ok ? 'is-ok' : 'is-ko'}">${ok ? '✓ Correcto' : '✕ Fallo'}</span>
+        <span class="psheet__tag mono ${ok ? 'is-ok' : 'is-ko'}">${ok ? `${icon('check')}Correcto` : `${icon('x')}Fallo`}</span>
         <h4>${q.scam ? 'Es una estafa' : 'Es legítimo'}</h4>
         <p class="psheet__lbl mono">${q.scam ? 'Señales de alarma' : 'Señales de confianza'}</p>
         <ol class="psheet__flags">${q.flags.map((f, k) => `<li><span>${k + 1}</span>${esc(f.n)}</li>`).join('')}</ol>
         <p class="psheet__why">${esc(q.why)}</p>
-        <button class="psheet__next mono" data-hover>${last ? 'Ver resultado' : 'Siguiente mensaje'} →</button>
+        <button class="psheet__next mono" data-hover>${last ? 'Ver resultado' : 'Siguiente mensaje'}${icon('arrowRight')}</button>
       </div>`
     sheet.querySelector('.psheet__next').addEventListener('click', next)
     sheet.scrollTop = 0
@@ -291,8 +292,8 @@ export function initQuiz(items, scene) {
         <div class="presult__num"><b>0</b><span>/ ${n}</span></div>
       </div>
       <p class="presult__msg">${msg}</p>
-      ${failed.length ? `<p class="presult__lbl mono">Repasa</p><div class="presult__links">${failed.map((s) => `<a href="#/${s.id}" data-hover>${esc(s.title)} →</a>`).join('')}</div>` : ''}
-      <button class="presult__again mono" data-hover>Repetir ↺</button>`
+      ${failed.length ? `<p class="presult__lbl mono">Repasa</p><div class="presult__links">${failed.map((s) => `<a href="#/${s.id}" data-hover>${esc(s.title)}${icon('arrowRight')}</a>`).join('')}</div>` : ''}
+      <button class="presult__again mono" data-hover>${icon('rotateCcw')}Repetir</button>`
     result.classList.toggle('is-perfect', ratio === 1)
     result.querySelector('.presult__again').addEventListener('click', restart)
     slot.replaceChildren()
@@ -353,7 +354,7 @@ export function initQuiz(items, scene) {
       gsap.to(phone, { '--tint': 0, duration: 0.5 })
       if (Math.abs(dx) > SWIPE) answer(dx < 0 ? 'scam' : 'legit')
       else {
-        gsap.to(el, { x: 0, rotation: 0, duration: 0.8, ease: 'elastic.out(1, 0.45)' })
+        gsap.to(el, { x: 0, rotation: 0, duration: 0.4, ease: 'expo.out' })
         gsap.to([stamps.scam, stamps.legit], { opacity: 0, duration: 0.3 })
       }
     }
@@ -374,26 +375,6 @@ export function initQuiz(items, scene) {
     else return
     e.preventDefault()
   })
-
-  // Inclinación 3D del móvil siguiendo el ratón (solo escritorio)
-  if (!matchMedia('(pointer: coarse)').matches) {
-    const stage = $('.quiz__stage')
-    const rx = gsap.quickTo(phone, 'rotationX', { duration: 0.8, ease: 'power3' })
-    const ry = gsap.quickTo(phone, 'rotationY', { duration: 0.8, ease: 'power3' })
-    gsap.set(phone, { transformPerspective: 1200 })
-    stage.addEventListener('pointermove', (e) => {
-      const r = stage.getBoundingClientRect()
-      const px = (e.clientX - r.left) / r.width - 0.5
-      const py = (e.clientY - r.top) / r.height - 0.5
-      rx(-py * 7)
-      ry(px * 9)
-      phone.style.setProperty('--gx', `${50 + px * 60}%`)
-    })
-    stage.addEventListener('pointerleave', () => {
-      rx(0)
-      ry(0)
-    })
-  }
 
   // Empieza cuando el juego entra en pantalla, para que se vea llegar el primer mensaje
   gsap.set(result, { display: 'none' })

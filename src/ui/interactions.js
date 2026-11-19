@@ -2,8 +2,6 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
 
-const CHARS = '01<>/\\#*+=_[]{}ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-
 // Cursor personalizado
 export function initCursor() {
   const el = document.querySelector('.cursor')
@@ -27,60 +25,13 @@ export function initCursor() {
   })
 }
 
-// Texto que se "descifra" al pasar el ratón
-export function initScramble() {
-  document.querySelectorAll('[data-scramble]').forEach((el) => {
-    const text = el.textContent
-    el.addEventListener('mouseenter', () => {
-      gsap.to(el, { duration: 0.6, scrambleText: { text, chars: CHARS, speed: 0.9, revealDelay: 0.1 }, overwrite: true })
-    })
-  })
-}
-
-export function scrambleTo(el, text, duration = 0.8) {
-  gsap.to(el, { duration, scrambleText: { text, chars: CHARS, speed: 0.8 }, overwrite: true })
-}
-
-// Botones que se pegan al cursor
-export function initMagnetic() {
-  if (matchMedia('(pointer: coarse)').matches) return
-  document.querySelectorAll('[data-magnetic]').forEach((el) => {
-    const x = gsap.quickTo(el, 'x', { duration: 0.8, ease: 'elastic.out(1, 0.4)' })
-    const y = gsap.quickTo(el, 'y', { duration: 0.8, ease: 'elastic.out(1, 0.4)' })
-    el.addEventListener('pointermove', (e) => {
-      const r = el.getBoundingClientRect()
-      x((e.clientX - r.left - r.width / 2) * 0.35)
-      y((e.clientY - r.top - r.height / 2) * 0.35)
-    })
-    el.addEventListener('pointerleave', () => { x(0); y(0) })
-  })
-}
-
-// Tarjetas: brillo que sigue al ratón, inclinación 3D y color en la escena WebGL
+// Tarjetas: al pasar por encima, la escena 3D toma el color de esa estafa
 export function initCards(scams, scene) {
   document.querySelectorAll('.card').forEach((card) => {
     const scam = scams.find((s) => s.id === card.dataset.id)
-    const rx = gsap.quickTo(card, 'rotationX', { duration: 0.6, ease: 'power3' })
-    const ry = gsap.quickTo(card, 'rotationY', { duration: 0.6, ease: 'power3' })
-    gsap.set(card, { transformPerspective: 900 })
-    card.addEventListener('pointermove', (e) => {
-      const r = card.getBoundingClientRect()
-      const px = (e.clientX - r.left) / r.width
-      const py = (e.clientY - r.top) / r.height
-      card.style.setProperty('--mx', `${px * 100}%`)
-      card.style.setProperty('--my', `${py * 100}%`)
-      rx((0.5 - py) * 8)
-      ry((px - 0.5) * 8)
-    })
-    card.addEventListener('pointerenter', () => {
-      scene?.setHover(scam.hue)
-      const title = card.querySelector('.card__title')
-      gsap.to(title, { duration: 0.7, scrambleText: { text: scam.title, chars: CHARS, speed: 1 }, overwrite: true })
-    })
-    card.addEventListener('pointerleave', () => {
-      rx(0); ry(0)
-      scene?.setHover(null)
-    })
+    // El color de la estafa vive solo en la escena 3D (el "momento"), no en la interfaz
+    card.addEventListener('pointerenter', () => scene?.setHover(scam.hue))
+    card.addEventListener('pointerleave', () => scene?.setHover(null))
   })
 }
 
@@ -140,11 +91,11 @@ export function initReveals() {
 
   // Entradas en cascada
   const staggered = '.cards--grid .card, .tip, .source, .stat, .help, .credits > div'
-  gsap.set(staggered, { opacity: 0, y: 70 })
+  gsap.set(staggered, { opacity: 0, y: 12 })
   ScrollTrigger.batch(staggered, {
     start: 'top 92%',
     once: true,
     onEnter: (els) =>
-      gsap.fromTo(els, { opacity: 0, y: 70 }, { opacity: 1, y: 0, duration: 1.2, stagger: 0.08, ease: 'expo.out', overwrite: true }),
+      gsap.fromTo(els, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.05, ease: 'expo.out', overwrite: true }),
   })
 }

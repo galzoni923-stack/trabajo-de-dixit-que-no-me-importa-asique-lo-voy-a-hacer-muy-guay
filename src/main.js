@@ -16,7 +16,7 @@ import { renderContent, pad } from './ui/render.js'
 import { Dossier } from './ui/dossier.js'
 import { initQuiz } from './ui/quiz.js'
 import { createAnatomy } from './ui/anatomy.js'
-import { initCursor, initScramble, initMagnetic, initCards, initReveals, scrambleTo } from './ui/interactions.js'
+import { initCursor, initCards, initReveals } from './ui/interactions.js'
 
 gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin, DrawSVGPlugin)
 
@@ -100,13 +100,13 @@ const menu = document.querySelector('.mobile-menu')
 function closeMenu() {
   menu.classList.remove('is-open')
   menuBtn.setAttribute('aria-expanded', 'false')
-  menuBtn.textContent = 'MENÚ'
+  menuBtn.textContent = 'Menú'
 }
 menuBtn.addEventListener('click', () => {
   const open = !menu.classList.contains('is-open')
   menu.classList.toggle('is-open', open)
   menuBtn.setAttribute('aria-expanded', String(open))
-  menuBtn.textContent = open ? 'CERRAR' : 'MENÚ'
+  menuBtn.textContent = open ? 'Cerrar' : 'Menú'
   if (open) gsap.from('.mobile-menu a', { yPercent: 100, opacity: 0, stagger: 0.06, duration: 0.9, ease: 'expo.out' })
 })
 
@@ -114,23 +114,9 @@ menuBtn.addEventListener('click', () => {
 const hudIndex = document.querySelector('.hud__index')
 const hudTrack = document.querySelector('.hud__track i')
 const hudSection = document.querySelector('.hud__section')
-const hudCoords = document.querySelector('.hud__coords')
-const clock = document.querySelector('.hud__clock')
 const sections = [...document.querySelectorAll('[data-section]')]
-const fmt = new Intl.DateTimeFormat('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit', second: '2-digit' })
-setInterval(() => (clock.textContent = `LUGO ${fmt.format(new Date())}`), 1000)
-
-let px = 0
-let py = 0
-window.addEventListener('pointermove', (e) => {
-  px = (e.clientX / innerWidth) * 2 - 1
-  py = -(e.clientY / innerHeight) * 2 + 1
-})
 lenis.on('scroll', ({ progress }) => {
   gsap.set(hudTrack, { scaleY: progress })
-})
-gsap.ticker.add(() => {
-  hudCoords.textContent = `X ${px.toFixed(3)} · Y ${py.toFixed(3)} · ${String(Math.round((lenis.progress || 0) * 100)).padStart(3, '0')}%`
 })
 
 let activeSection = null
@@ -141,7 +127,7 @@ function activate(sec) {
   scene?.setSection(name)
   html.classList.toggle('dim-gl', name !== 'inicio' && name !== 'fuentes')
   hudIndex.textContent = pad(sections.indexOf(sec) + 1)
-  scrambleTo(hudSection, `// ${sec.dataset.label}`)
+  hudSection.textContent = sec.dataset.label
   document.querySelectorAll('.nav a').forEach((a) => a.classList.toggle('is-active', a.getAttribute('href') === `#${name}`))
 }
 
@@ -173,12 +159,6 @@ function initScroll() {
           onUpdate: (self) => gsap.set(bar, { scaleX: self.progress }),
         },
       })
-      // Inclinación de las tarjetas según la velocidad de scroll
-      const cards = track.querySelectorAll('.card')
-      const skew = gsap.quickTo(cards, 'skewX', { duration: 0.5, ease: 'power3' })
-      const onScroll = ({ velocity }) => skew(gsap.utils.clamp(-8, 8, -velocity * 0.25))
-      lenis.on('scroll', onScroll)
-      cleanups.push(() => lenis.off('scroll', onScroll))
     }
 
     sections.forEach((sec) => {
@@ -220,11 +200,9 @@ async function boot() {
       gsap.set(bar, { scaleX: progress.v / 100 })
     },
   })
-  scrambleTo(status, 'CONEXIÓN SEGURA ✓', 0.6)
+  status.textContent = 'Lista'
 
   initReveals()
-  initScramble()
-  initMagnetic()
   initCursor()
   initCards(scams, scene)
   initQuiz(quiz, scene)

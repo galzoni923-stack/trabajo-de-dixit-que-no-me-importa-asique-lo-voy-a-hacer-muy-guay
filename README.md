@@ -31,6 +31,13 @@ El cristal central representa **tu identidad digital**. En los bloques de estafa
 En "Consejos generales" se vuelve a unir: protegerse es recomponerlo. Al hacer scroll rápido o abrir un dossier aparece
 una interferencia de señal, como si alguien estuviera interceptando la conexión.
 
+## Pulido con la skill unslop
+
+El diseño se ha repasado con la skill [unslop](https://github.com/heydamir/unslop) de Damir Sokolovsky ([@heydamir](https://x.com/heydamir)), CC BY 4.0, instalada en `.claude/skills/unslop`. Se aplicó en modo pulido: se mantuvo el 3D y el movimiento que pide el encargo y se quitaron las señales de "diseño hecho por IA" (etiquetas en mayúsculas, HUD decorativo, brillos, 15 colores de acento, píldoras, bucles y rebotes).
+
+- **Mundo:** la pantalla del móvil por la noche. Neutros de la rampa "ink" y un único acento azul cielo
+- **Firma:** la marca roja numerada sobre el texto sospechoso, la misma en la anatomía, el juego y los dossiers
+
 ## Cómo cubre la rúbrica
 
 - **Estructura y navegación (2 p):** portada → bloque 1 (7 delitos) → bloque 2 (8 fraudes) → juego → 10 consejos → fuentes y créditos. Cada estafa tiene su propia página con URL propia.

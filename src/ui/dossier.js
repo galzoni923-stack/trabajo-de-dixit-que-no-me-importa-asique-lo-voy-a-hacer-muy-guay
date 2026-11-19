@@ -1,5 +1,5 @@
 import gsap from 'gsap'
-import { accent, pad } from './render.js'
+import { pad } from './render.js'
 
 // Panel a pantalla completa con la "página" de cada estafa. URL: #/id-de-la-estafa
 export class Dossier {
@@ -33,7 +33,6 @@ export class Dossier {
     const block = scam.block === 'delitos' ? 'Delitos informáticos' : 'Fraudes cotidianos'
     const q = (s) => this.el.querySelector(s)
 
-    this.el.style.setProperty('--accent', accent(scam.hue))
     q('.dossier__crumb').textContent = `${block} / ${pad(i + 1)}`
     q('.dossier__bignum').textContent = pad(i + 1)
     q('.dossier__tag').textContent = scam.tag

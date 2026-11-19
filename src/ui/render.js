@@ -1,6 +1,6 @@
 import { blocks, scams, tips, sources, credits } from '../data/content.js'
+import { icon } from './icons.js'
 
-export const accent = (hue) => `hsl(${Math.round(hue * 360)} 85% 68%)`
 export const pad = (n) => String(n).padStart(2, '0')
 
 // Construye en el DOM todo el contenido a partir de data/content.js
@@ -31,7 +31,7 @@ export function renderContent() {
     li.innerHTML = `<a href="${s.url}" target="_blank" rel="noopener noreferrer" data-hover data-cursor="Visitar">
       <span class="source__name">${s.name}</span>
       <span class="source__note">${s.note}</span>
-      <span class="source__go mono">${new URL(s.url).hostname.replace('www.', '')} ↗</span></a>`
+      <span class="source__go mono">${new URL(s.url).hostname.replace('www.', '')}${icon('arrowUpRight')}</span></a>`
     src.appendChild(li)
   })
 
@@ -47,11 +47,10 @@ function card(s, i) {
   a.dataset.id = s.id
   a.dataset.hover = ''
   a.dataset.cursor = 'Abrir'
-  a.style.setProperty('--accent', accent(s.hue))
   a.innerHTML = `
     <div class="card__top mono"><span class="card__num">${pad(i + 1)}</span><span>${s.tag}</span></div>
     <h3 class="card__title">${s.title}</h3>
     <p class="card__short">${s.short}</p>
-    <div class="card__foot mono"><span>Abrir dossier</span><b>→</b></div>`
+    <div class="card__foot mono"><span>Abrir dossier</span>${icon('arrowRight')}</div>`
   return a
 }

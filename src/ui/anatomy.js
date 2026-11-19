@@ -87,7 +87,6 @@ export function createAnatomy({ scene, desktop }) {
   })
   tl.fromTo('.kt__w--strike', { '--s': 0 }, { '--s': 1, duration: 0.3, ease: 'power2.inOut' }, 0.95)
     .to('.kt__w--strike', { opacity: 0.5, duration: 0.3 }, 1.1)
-    .fromTo('.kt__w--danger', { x: -18 }, { x: 0, duration: 0.5, ease: 'elastic.out(1, 0.2)' }, 2.0)
     .to('.kt--a .kt__row', { yPercent: -40, opacity: 0, filter: 'blur(12px)', stagger: 0.05, duration: 0.5, ease: 'power2.in' }, 2.35)
 
   // B · El mensaje se escribe solo
@@ -108,7 +107,7 @@ export function createAnatomy({ scene, desktop }) {
   })
 
   // C · El clic y el robo
-  tl.fromTo(tap, { opacity: 0, scale: 2.4 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(2)' }, 6.3)
+  tl.fromTo(tap, { opacity: 0, scale: 2.4 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'expo.out' }, 6.3)
     .to(tap, { scale: 0.7, duration: 0.12, yoyo: true, repeat: 1 }, 6.65)
     .call(() => scene?.pulse(1.2), null, 6.8)
     .to(

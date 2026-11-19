@@ -5,11 +5,9 @@ import {
   EffectPass,
   BloomEffect,
   ChromaticAberrationEffect,
-  NoiseEffect,
   VignetteEffect,
   ToneMappingEffect,
   ToneMappingMode,
-  BlendFunction,
 } from 'postprocessing'
 import { Text } from 'troika-three-text'
 export { preloadFont } from 'troika-three-text'
@@ -30,7 +28,7 @@ const PRESETS = {
   fraudes:    { coreX: 3.0,  coreY: 1.25, coreScale: 0.55, fracture: 0.85, camZ: 7.6, hue: 0.07, danger: 0.55, ring: 0, words: 0, shell: 0.1, glow: 1.3, spin: 2 },
   detecta:    { coreX: 3.0,  coreY: -0.4, coreScale: 0.62, fracture: 0.45, camZ: 7.0, hue: 0.72, danger: 0.2,  ring: 0, words: 0, shell: 0.3, glow: 1,   spin: 1 },
   consejos:   { coreX: 2.55, coreY: 0,    coreScale: 0.78, fracture: 0,    camZ: 6.8, hue: 0.5,  danger: 0,    ring: 0, words: 0, shell: 0.9, glow: 1.6, spin: 0.5 },
-  fuentes:    { coreX: 0,    coreY: 0.6,  coreScale: 0.55, fracture: 0.12, camZ: 10,  hue: 0.55, danger: 0,    ring: 0, words: 0, shell: 0.4, glow: 1.2, spin: 0.4 },
+  fuentes:    { coreX: 3.1,  coreY: 1.5,  coreScale: 0.45, fracture: 0.12, camZ: 10,  hue: 0.55, danger: 0,    ring: 0, words: 0, shell: 0.4, glow: 1.2, spin: 0.4 },
 }
 
 const RED = new THREE.Color('#ff2d4b')
@@ -80,12 +78,12 @@ export class Scene {
     })
     this.dpr = Math.min(window.devicePixelRatio, this.lowPower ? 1.25 : 1.75)
     this.renderer.setPixelRatio(this.dpr)
-    this.renderer.setClearColor(0x03050a, 1)
+    this.renderer.setClearColor(0x07080d, 1)
   }
 
   initScene() {
     this.scene = new THREE.Scene()
-    this.scene.fog = new THREE.FogExp2(0x03050a, 0.06)
+    this.scene.fog = new THREE.FogExp2(0x07080d, 0.06)
     this.camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100)
     this.camera.position.set(0, 0, PRESETS.inicio.camZ)
     this.world = new THREE.Group()
@@ -247,10 +245,10 @@ export class Scene {
     this.scams.forEach((s, i) => {
       const a = (i / this.scams.length) * Math.PI * 2
       const t = new Text()
-      t.text = s.title.toUpperCase()
+      t.text = s.title
       t.font = FONT
-      t.fontSize = 0.13
-      t.letterSpacing = 0.12
+      t.fontSize = 0.14
+      t.letterSpacing = 0
       t.anchorX = 'center'
       t.anchorY = 'middle'
       t.color = 0xcfefff
@@ -317,9 +315,7 @@ export class Scene {
       radialModulation: true,
       modulationOffset: 0.18,
     })
-    const noise = new NoiseEffect({ blendFunction: BlendFunction.OVERLAY, premultiply: false })
-    noise.blendMode.opacity.value = 0.14
-    this.composer.addPass(new EffectPass(this.camera, this.ca, noise))
+    this.composer.addPass(new EffectPass(this.camera, this.ca))
   }
 
   // ───────────────────────── API ─────────────────────────
@@ -457,8 +453,8 @@ export class Scene {
     const ringOp = s.ring * s.intro * (mobile ? 0 : 1)
     this.ring.visible = ringOp > 0.01
     this.ringTexts.forEach((t) => {
-      t.fillOpacity = ringOp * 0.7
-      t.material.opacity = ringOp * 0.7
+      t.fillOpacity = ringOp * 0.5
+      t.material.opacity = ringOp * 0.5
     })
     this.ring.scale.setScalar(0.85 + s.ring * 0.15)
 
