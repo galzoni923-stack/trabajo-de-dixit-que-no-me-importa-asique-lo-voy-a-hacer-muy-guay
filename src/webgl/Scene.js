@@ -24,15 +24,20 @@ const FONT_BOLD = `${BASE}fonts/space-grotesk-latin-700-normal.woff`
 // El orbe es siempre el mismo: el anillo "breathing" de thinking-orbs.
 const ORB_STATE = 'breathing'
 const ORB_RADIUS = 2
+// Tamaños pensados para 1440 × 900: el anillo mide ~800 px en las secciones de contenido
+// (más del doble que cualquier tarjeta) y ~860 px en la portada.
 const PRESETS = {
-  inicio:     { coreX: 0,    coreY: 0,    coreScale: 1,    camZ: 6.2, hue: 0.54, danger: 0,    ring: 0, words: 0, glow: 1.3, spin: 0.7 },
-  manifiesto: { coreX: 0,    coreY: 0,    coreScale: 0.9,  camZ: 7.4, hue: 0.56, danger: 0,    ring: 0, words: 1, glow: 1.3, spin: 0.7 },
-  anatomia:   { coreX: 0,    coreY: 0,    coreScale: 0.7,  camZ: 8.5, hue: 0.54, danger: 0.5,  ring: 0, words: 0, glow: 1.3, spin: 0.7 },
-  delitos:    { coreX: 2.3,  coreY: 0,    coreScale: 1,    camZ: 7.0, hue: 0.54, danger: 0.9,  ring: 1, words: 0, glow: 1.3, spin: 0.7 },
-  fraudes:    { coreX: 3.0,  coreY: 0.85, coreScale: 0.75, camZ: 7.6, hue: 0.07, danger: 0.55, ring: 0, words: 0, glow: 1.3, spin: 0.7 },
-  detecta:    { coreX: 3.0,  coreY: -0.4, coreScale: 0.85, camZ: 7.0, hue: 0.72, danger: 0.2,  ring: 0, words: 0, glow: 1.3, spin: 0.7 },
-  consejos:   { coreX: 2.8,  coreY: 0,    coreScale: 0.85,  camZ: 6.8, hue: 0.5,  danger: 0,    ring: 0, words: 0, glow: 1.3, spin: 0.7 },
-  fuentes:    { coreX: 3.1,  coreY: 1.5,  coreScale: 0.6,  camZ: 10,  hue: 0.55, danger: 0,    ring: 0, words: 0, glow: 1.3, spin: 0.7 },
+  inicio:     { coreX: 0,     coreY: 0,    coreScale: 1.18, camZ: 6.2, hue: 0.54, danger: 0,    ring: 0, words: 0, glow: 1.3, spin: 0.7 },
+  manifiesto: { coreX: 0,     coreY: 0,    coreScale: 1.25, camZ: 7.4, hue: 0.56, danger: 0,    ring: 0, words: 1, glow: 1.3, spin: 0.7 },
+  // Enmarca el SMS de la anatomía
+  anatomia:   { coreX: 0,     coreY: 0,    coreScale: 1.21, camZ: 8.5, hue: 0.54, danger: 0.5,  ring: 0, words: 0, glow: 1.3, spin: 0.7 },
+  delitos:    { coreX: 2.3,   coreY: 0,    coreScale: 1.27, camZ: 7.0, hue: 0.54, danger: 0.9,  ring: 1, words: 0, glow: 1.3, spin: 0.7 },
+  // Detrás del título, a la izquierda: el texto grande se lee bien sobre los puntos
+  fraudes:    { coreX: -2.56, coreY: 1.0,  coreScale: 1.1,  camZ: 7.6, hue: 0.07, danger: 0.55, ring: 0, words: 0, glow: 1.3, spin: 0.7 },
+  // Rodea el móvil del juego
+  detecta:    { coreX: 1.77,  coreY: 0,    coreScale: 1.24, camZ: 7.0, hue: 0.72, danger: 0.2,  ring: 0, words: 0, glow: 1.3, spin: 0.7 },
+  consejos:   { coreX: 2.8,   coreY: 0,    coreScale: 1.18, camZ: 6.8, hue: 0.5,  danger: 0,    ring: 0, words: 0, glow: 1.3, spin: 0.7 },
+  fuentes:    { coreX: -2.73, coreY: 0.84, coreScale: 0.9,  camZ: 10,  hue: 0.55, danger: 0,    ring: 0, words: 0, glow: 1.3, spin: 0.7 },
 }
 
 const RED = new THREE.Color('#e5484d')
@@ -250,7 +255,7 @@ export class Scene {
     this.state.focus = 1
     this.pulse(1)
     this.tweenTo(
-      { coreX: this.isMobile ? 0 : -2.35, coreY: 0, coreScale: 1, camZ: 6.6, hue: scam.hue, danger: 0.25, ring: 0, words: 0, glow: 1.3, spin: 0.7 },
+      { coreX: this.isMobile ? 0 : -2.35, coreY: 0, coreScale: 1.17, camZ: 6.6, hue: scam.hue, danger: 0.25, ring: 0, words: 0, glow: 1.3, spin: 0.7 },
       1.6
     )
     this.ringTexts.forEach((t) => (t.color = t.userData.id === scam.id ? 0xffffff : 0xcfefff))
@@ -311,7 +316,8 @@ export class Scene {
     this.tmpColor.copy(this.colB).lerp(WHITE, 0.55)
 
     const xFactor = mobile ? 0 : 1
-    this.coreGroup.position.set(s.coreX * xFactor, s.coreY + (mobile && s.coreX !== 0 ? 0.9 : 0), 0)
+    // En móvil va centrado y algo más arriba, para no pasar por detrás del texto de abajo
+    this.coreGroup.position.set(s.coreX * xFactor, s.coreY + (mobile ? (s.coreX !== 0 ? 0.9 : 0.6) : 0), 0)
     const sc = Math.max(s.coreScale * s.intro * (mobile ? 0.82 : 1) * (1 + s.burst * 0.06), 0.0001)
     this.coreGroup.scale.setScalar(sc)
     // El motor ya gira el orbe; el ratón lo inclina para que se note que es 3D de verdad
