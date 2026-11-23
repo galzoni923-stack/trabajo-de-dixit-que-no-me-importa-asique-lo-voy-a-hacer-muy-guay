@@ -30,6 +30,12 @@ npm run preview   # sirve /dist para comprobarla
 
 El elemento central es un orbe de puntos: el anillo `breathing` de [thinking-orbs](https://github.com/Jakubantalik/thinking-orbs) (MIT © Jakub Antalik). Su geometría sale del motor de la librería y se pinta en Three.js con bloom y profundidad real. Es el mismo en toda la web; lo que cambia entre secciones es su posición, su tamaño y su color (rojo en Delitos informáticos, por ejemplo). Al hacer scroll rápido va más deprisa, y el ratón lo inclina para que se note que es 3D.
 
+- **Intro:** al cargar, los puntos llegan en espiral desde fuera y se ensamblan en el anillo mientras entra el título.
+- **Cursor:** los puntos se apartan del ratón y, al hacer clic en un hueco, una onda recorre el anillo.
+- **Recorrido continuo:** el orbe no salta de una sección a otra; viaja, crece y cambia de color atado al scroll.
+- **Tarjetas conectadas:** al pasar por una tarjeta, las demás se atenúan y su nombre gira en el anillo de texto 3D hasta quedar delante, iluminado.
+- **Cortina entre dossiers:** al pasar de una estafa a otra, el anillo crece hasta barrer la pantalla y aparece la siguiente.
+
 ## Simulador "¿Qué harías tú?"
 
 Tres conversaciones con un estafador, cada una en un canal: un amigo que pide un código por WhatsApp, un comprador de Wallapop y una oferta de trabajo por Telegram. En cada paso eliges qué responder; un medidor de riesgo sube o baja con cada decisión y la historia acaba con un final protegido o estafado. Al terminar, la conversación se rebobina con las señales marcadas y se repasan tus decisiones. Se juega con el ratón, con el dedo o con las teclas 1, 2 y 3.

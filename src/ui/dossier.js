@@ -20,6 +20,16 @@ export class Dossier {
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.current) this.requestClose()
     })
+    // Anterior / siguiente sustituyen la entrada del historial en vez de apilarla:
+    // así "atrás" (o Escape) cierra el dossier en lugar de volver al anterior
+    this.el.querySelectorAll('.dossier__prev, .dossier__next').forEach((a) =>
+      a.addEventListener('click', (e) => {
+        e.preventDefault()
+        const id = a.getAttribute('href').slice(2)
+        history.replaceState(null, '', `#/${id}`)
+        this.open(id)
+      })
+    )
   }
 
   get isOpen() {
@@ -75,13 +85,17 @@ export class Dossier {
     const items = this.panel.querySelectorAll('.dossier__tag, .dossier__title, .dossier__short, .route, .dsec, .dossier__nav')
 
     if (switching) {
+      // Cortina: el panel se vuelve transparente, el anillo barre la pantalla y aparece el nuevo dossier
+      this.scene?.wipe()
       gsap.timeline()
-        .to(items, { opacity: 0, y: -20, duration: 0.3, stagger: 0.02, ease: 'power2.in' })
+        .to(this.panel, { '--panel-a': 0.12, duration: 0.45, ease: 'power2.in' }, 0)
+        .to(items, { opacity: 0, y: -20, duration: 0.3, stagger: 0.02, ease: 'power2.in' }, 0)
         .add(() => {
           this.fill(scam)
           this.panel.scrollTop = 0
-        })
-        .fromTo(items, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.8, stagger: 0.05, ease: 'expo.out' })
+        }, 0.55)
+        .to(this.panel, { '--panel-a': 0.97, duration: 0.6, ease: 'power2.out' }, 0.65)
+        .fromTo(items, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.8, stagger: 0.05, ease: 'expo.out' }, 0.65)
         .add(() => this.playRoute(0.2), '<')
       gsap.fromTo('.dossier__bignum', { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 1, ease: 'expo.out', delay: 0.3 })
       return
@@ -96,6 +110,7 @@ export class Dossier {
     this.panel.scrollTop = 0
 
     gsap.killTweensOf([this.panel, this.veil, items])
+    this.scene?.wipe()
     gsap.timeline()
       .to(this.veil, { opacity: 1, duration: 0.8, ease: 'power2.out' }, 0)
       .fromTo(this.panel, { clipPath: 'inset(0 0 0 100%)' }, { clipPath: 'inset(0 0 0 0%)', duration: 1.1, ease: 'expo.inOut' }, 0)

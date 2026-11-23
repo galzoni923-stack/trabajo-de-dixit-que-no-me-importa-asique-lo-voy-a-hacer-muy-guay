@@ -171,6 +171,22 @@ function initScroll() {
       })
     })
 
+    // Recorrido continuo: el orbe viaja de una sección a la siguiente atado al scroll
+    sections.forEach((sec, i) => {
+      if (i === 0) return
+      const prev = sections[i - 1].dataset.section
+      const name = sec.dataset.section
+      const trigger = sec.parentElement.classList.contains('pin-spacer') ? sec.parentElement : sec
+      ScrollTrigger.create({
+        trigger,
+        start: 'top bottom',
+        end: 'top 35%',
+        onUpdate: (self) => scene?.setBlend(prev, name, self.progress),
+        onLeave: () => scene?.setBlend(prev, name, 1),
+        onLeaveBack: () => scene?.setBlend(prev, name, 0),
+      })
+    })
+
     return () => cleanups.forEach((fn) => fn())
   })
 }

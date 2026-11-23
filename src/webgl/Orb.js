@@ -132,6 +132,12 @@ export class Orb {
       uGlow: { value: 1 },
       uPxScale: { value: 1 },
       uModelScale: { value: radius },
+      uAssemble: { value: 1 },
+      uAspect: { value: 1 },
+      uMouse: { value: new THREE.Vector2(9, 9) },
+      uRepel: { value: 0 },
+      uWaveOrigin: { value: new THREE.Vector2() },
+      uWaveT: { value: 10 },
     }
     this.front = new OrbLayer(this.uniforms)
     this.back = new OrbLayer(this.uniforms)

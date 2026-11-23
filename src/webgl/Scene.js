@@ -40,6 +40,10 @@ const PRESETS = {
   fuentes:    { coreX: -2.73, coreY: 0.84, coreScale: 0.9,  camZ: 10,  hue: 0.55, danger: 0,    ring: 0, words: 0, glow: 1.3, spin: 0.7 },
 }
 
+// Valores que se mezclan con el scroll (el resto del estado lo animan tweens puntuales)
+const KEYS = ['coreX', 'coreY', 'coreScale', 'camZ', 'hue', 'danger', 'ring', 'words', 'glow', 'spin']
+const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
+
 const RED = new THREE.Color('#e5484d')
 const WHITE = new THREE.Color('#ffffff')
 
@@ -50,7 +54,16 @@ export class Scene {
     this.lowPower = lowPower
     this.reducedMotion = reducedMotion
     this.section = 'inicio'
-    this.state = { ...PRESETS.inicio, camX: 0, intro: 0, burst: 0, focus: 0 }
+    this.state = { ...PRESETS.inicio, camX: 0, intro: 0, burst: 0, wipe: 0 }
+    this.target = { ...PRESETS.inicio }
+    this.blend = { a: 'inicio', b: 'inicio', t: 0 }
+    this.focusPreset = null
+    this.risk = 0
+    this.hoverId = null
+    this.coarse = matchMedia('(pointer: coarse)').matches
+    this.pointerInside = false
+    this.mouse = new THREE.Vector2(9, 9)
+    this.waveT = 10
     this.pointer = new THREE.Vector2()
     this.pointerSmooth = new THREE.Vector2()
     this.velocity = 0
@@ -71,6 +84,16 @@ export class Scene {
     window.addEventListener('resize', () => this.onResize())
     window.addEventListener('pointermove', (e) => {
       this.pointer.set((e.clientX / window.innerWidth) * 2 - 1, -(e.clientY / window.innerHeight) * 2 + 1)
+      this.pointerInside = true
+    })
+    document.addEventListener('pointerout', (e) => {
+      if (!e.relatedTarget) this.pointerInside = false
+    })
+    // Clic en un hueco (no en la interfaz): onda que recorre el anillo
+    window.addEventListener('pointerdown', (e) => {
+      if (this.reducedMotion || e.target.closest('a, button, .card, .chat, .dossier, input')) return
+      this.orb.uniforms.uWaveOrigin.value.set((e.clientX / window.innerWidth) * 2 - 1, -(e.clientY / window.innerHeight) * 2 + 1)
+      this.waveT = 0
     })
   }
 
@@ -234,48 +257,38 @@ export class Scene {
     return window.innerWidth < 820
   }
 
-  setSection(name, immediate = false) {
-    if (!PRESETS[name]) return
-    this.section = name
-    if (this.state.focus > 0.01) return // un dossier abierto manda
-    this.tweenTo(PRESETS[name], immediate ? 0 : 2.2)
+  // La sección activa (HUD, riesgo del simulador). El orbe no salta: lo mueve setBlend con el scroll
+  setSection(name) {
+    if (PRESETS[name]) this.section = name
   }
 
-  tweenTo(preset, duration = 2) {
-    gsap.to(this.state, {
-      ...preset,
-      duration,
-      ease: 'expo.inOut',
-      overwrite: 'auto',
-    })
+  // Avance entre dos secciones vecinas (0 = a, 1 = b): el orbe viaja de una a otra con el scroll
+  setBlend(a, b, t) {
+    this.blend.a = a
+    this.blend.b = b
+    this.blend.t = Math.min(1, Math.max(0, t))
   }
 
   // Al abrir el dossier de una estafa, el orbe se coloca a la izquierda y se tiñe de su color
   focus(scam) {
-    this.state.focus = 1
     this.pulse(1)
-    this.tweenTo(
-      { coreX: this.isMobile ? 0 : -2.35, coreY: 0, coreScale: 1.17, camZ: 6.6, hue: scam.hue, danger: 0.25, ring: 0, words: 0, glow: 1.3, spin: 0.7 },
-      1.6
-    )
-    this.ringTexts.forEach((t) => (t.color = t.userData.id === scam.id ? 0xffffff : 0xcfefff))
+    this.focusPreset = { ...PRESETS.inicio, coreX: this.isMobile ? 0 : -2.35, coreY: 0, coreScale: 1.17, camZ: 6.6, hue: scam.hue, danger: 0.25, ring: 0, words: 0 }
   }
 
   unfocus() {
-    this.state.focus = 0
     this.pulse(0.6)
-    this.tweenTo(PRESETS[this.section], 1.8)
+    this.focusPreset = null
   }
 
-  setHover(hue) {
+  setHover(hue, id = null) {
     this.hoverHue = hue
+    this.hoverId = id
     gsap.to(this.hoverMix, { v: hue === null ? 0 : 1, duration: 0.8, ease: 'power3.out', overwrite: true })
   }
 
   // El simulador tiñe el anillo hacia rojo según el riesgo de la conversación (0-1)
   setRisk(r) {
-    if (this.section !== 'detecta' || this.state.focus > 0.01) return
-    gsap.to(this.state, { danger: 0.15 + r * 0.85, duration: 0.8, ease: 'power3.out', overwrite: false })
+    this.risk = r
   }
 
   // Ráfaga de interferencia (glitch) en el post-procesado
@@ -283,9 +296,32 @@ export class Scene {
     gsap.fromTo(this.state, { burst: amount }, { burst: 0, duration: 1.1, ease: 'power3.out', overwrite: false })
   }
 
+  // Cortina entre dossiers: el anillo crece hasta barrer la pantalla y vuelve
+  wipe() {
+    if (this.reducedMotion) return
+    gsap.killTweensOf(this.state, 'wipe')
+    gsap.timeline()
+      .to(this.state, { wipe: 1, duration: 0.55, ease: 'power3.in' })
+      .to(this.state, { wipe: 0, duration: 0.8, ease: 'expo.out' })
+    this.pulse(0.8)
+  }
+
+  // Intro: los puntos llegan en espiral y se ensamblan en el anillo
   intro() {
+    const u = this.orb.uniforms.uAssemble
     this.state.intro = 0
-    return gsap.timeline().to(this.state, { intro: 1, duration: 2.6, ease: 'expo.out' }, 0)
+    if (this.reducedMotion) {
+      u.value = 1
+      this.state.intro = 1
+      return
+    }
+    u.value = 0
+    return gsap
+      .timeline()
+      .to(u, { value: 1, duration: 2.8, ease: 'expo.inOut' }, 0)
+      .to(this.state, { intro: 1, duration: 2.6, ease: 'expo.out' }, 0)
+      .fromTo(this.state, { burst: 0 }, { burst: 0.9, duration: 1.4, ease: 'power2.in', overwrite: false }, 0.6)
+      .to(this.state, { burst: 0, duration: 1.2, ease: 'expo.out' }, 2)
   }
 
   // ───────────────────────── Bucle ─────────────────────────
@@ -300,9 +336,28 @@ export class Scene {
     this.renderer.getDrawingBufferSize(this.bufferSize)
   }
 
+  // Objetivo del frame: mezcla de las dos secciones vecinas (o el preset del dossier)
+  computeTarget() {
+    const { a, b, t } = this.blend
+    if (this.focusPreset) return Object.assign(this.target, this.focusPreset)
+    const A = PRESETS[a]
+    const B = PRESETS[b]
+    const k = easeInOut(t)
+    for (const key of KEYS) this.target[key] = A[key] + (B[key] - A[key]) * k
+    // El riesgo del simulador pesa tanto como esté presente la sección Detecta
+    const w = (a === 'detecta' ? 1 - k : 0) + (b === 'detecta' ? k : 0)
+    const riskDanger = Math.max(this.target.danger, 0.15 + this.risk * 0.85)
+    this.target.danger += (riskDanger - this.target.danger) * w
+    return this.target
+  }
+
   update(time, delta, velocity = 0) {
     const s = this.state
     const mobile = this.isMobile
+    const dt = Math.min(delta, 0.05)
+    const target = this.computeTarget()
+    const damp = 1 - Math.exp(-dt * 3.5)
+    for (const key of KEYS) s[key] += (target[key] - s[key]) * damp
     this.velocity += (Math.min(Math.abs(velocity) / 45, 1) - this.velocity) * 0.1
     this.pointerSmooth.lerp(this.pointer, 0.05)
 
@@ -318,13 +373,21 @@ export class Scene {
     const u = this.orb.uniforms
     u.uColor.value.copy(this.colB).lerp(WHITE, 0.45)
     u.uFar.value.copy(this.colB).lerp(WHITE, 0.2).multiplyScalar(0.55)
-    u.uGlow.value = s.glow * (1 + s.burst * 0.8)
+    u.uGlow.value = s.glow * (1 + s.burst * 0.8 + s.wipe)
+    // Interacción: el cursor aparta los puntos (solo con ratón) y el clic lanza una onda
+    this.mouse.lerp(this.pointer, 0.35)
+    u.uMouse.value.copy(this.mouse)
+    u.uAspect.value = this.camera.aspect
+    const repelOn = this.pointerInside && !this.coarse && !this.reducedMotion && !this.focusPreset ? 1 : 0
+    u.uRepel.value += (repelOn - u.uRepel.value) * (1 - Math.exp(-dt * 6))
+    this.waveT = Math.min(this.waveT + dt, 10)
+    u.uWaveT.value = this.waveT
     this.tmpColor.copy(this.colB).lerp(WHITE, 0.55)
 
     const xFactor = mobile ? 0 : 1
     // En móvil va centrado y algo más arriba, para no pasar por detrás del texto de abajo
     this.coreGroup.position.set(s.coreX * xFactor, s.coreY + (mobile ? (s.coreX !== 0 ? 0.9 : 0.6) : 0), 0)
-    const sc = Math.max(s.coreScale * s.intro * (mobile ? 0.82 : 1) * (1 + s.burst * 0.06), 0.0001)
+    const sc = Math.max(s.coreScale * (mobile ? 0.82 : 1) * (1 + s.burst * 0.06) * (1 + s.wipe * 6), 0.0001)
     this.coreGroup.scale.setScalar(sc)
     // El motor ya gira el orbe; el ratón lo inclina para que se note que es 3D de verdad
     this.tilt.rotation.x = this.pointerSmooth.y * -0.35
@@ -340,12 +403,29 @@ export class Scene {
 
     // Anillo de texto
     this.ring.position.set(this.coreGroup.position.x, this.coreGroup.position.y, 0)
-    this.ring.rotation.y += delta * 0.07 + this.velocity * 0.012
-    const ringOp = s.ring * s.intro * (mobile ? 0 : 1)
+    // Visible en Delitos; en el resto solo aparece al pasar por una tarjeta
+    const ringOp = (this.hoverId ? 1 : s.ring) * s.intro * (mobile ? 0 : 1)
     this.ring.visible = ringOp > 0.01
-    this.ringTexts.forEach((t) => {
-      t.fillOpacity = ringOp * 0.5
-      t.material.opacity = ringOp * 0.5
+    const active = this.hoverId ? this.ringTexts.findIndex((t) => t.userData.id === this.hoverId) : -1
+    if (active >= 0 && this.ring.visible) {
+      // Gira por el camino más corto hasta dejar delante el nombre de la tarjeta, algo girado
+      // hacia el centro de la pantalla (justo de frente, la perspectiva lo empujaría al borde)
+      const toward = -Math.sign(s.coreX) * 0.6
+      const goal = toward - (active / this.ringTexts.length) * Math.PI * 2
+      const diff = Math.atan2(Math.sin(goal - this.ring.rotation.y), Math.cos(goal - this.ring.rotation.y))
+      this.ring.rotation.y += diff * (1 - Math.exp(-dt * 6))
+    } else {
+      this.ring.rotation.y += delta * 0.07 + this.velocity * 0.012
+    }
+    const k = 1 - Math.exp(-dt * 8)
+    this.ringTexts.forEach((t, i) => {
+      const on = i === active
+      const op = ringOp * (active < 0 ? 0.5 : on ? 1 : 0.2)
+      t.fillOpacity += (op - t.fillOpacity) * k
+      t.material.opacity = t.fillOpacity
+      t.color = on ? 0xffffff : 0xcfefff
+      const scl = on ? 1.3 : 1
+      t.scale.setScalar(t.scale.x + (scl - t.scale.x) * k)
     })
     this.ring.scale.setScalar(0.85 + s.ring * 0.15)
 
@@ -371,7 +451,7 @@ export class Scene {
     this.particles.position.y = -window.scrollY * 0.0012
 
     // Post-procesado reactivo al scroll
-    const glitch = Math.min(this.velocity * 0.7 + s.burst, 1.4)
+    const glitch = Math.min(this.velocity * 0.7 + s.burst + s.wipe * 0.6, 1.4)
     if (this.signal) this.signal.intensity = glitch
     const ca = 0.0005 + glitch * 0.004
     this.ca.offset.set(ca, ca * 0.6)

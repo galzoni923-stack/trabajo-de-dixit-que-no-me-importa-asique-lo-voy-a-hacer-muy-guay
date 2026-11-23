@@ -48,11 +48,18 @@ export function initCards(scams, scene) {
     }
     // El color de la estafa vive solo en la escena 3D (el "momento"), no en la interfaz
     card.addEventListener('pointerenter', () => {
-      scene?.setHover(scam.hue)
+      // Foco: las demás tarjetas se atenúan y dejan ver el anillo 3D con el nombre de esta
+      card.parentElement.classList.add('is-focus')
+      card.classList.add('is-hover')
+      scene?.setHover(scam.hue, scam.id)
       scramble()
     })
     card.addEventListener('focus', scramble)
-    card.addEventListener('pointerleave', () => scene?.setHover(null))
+    card.addEventListener('pointerleave', () => {
+      card.parentElement.classList.remove('is-focus')
+      card.classList.remove('is-hover')
+      scene?.setHover(null, null)
+    })
   })
 }
 

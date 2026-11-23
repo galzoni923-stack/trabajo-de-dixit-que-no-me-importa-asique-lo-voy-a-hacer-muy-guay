@@ -9,15 +9,59 @@ attribute float aAlpha;
 uniform float uPxScale;     // píxeles por unidad de mundo a distancia 1
 uniform float uModelScale;  // escala del orbe en el mundo
 uniform float uOpacity;
+uniform float uAssemble;    // intro: 0 = puntos dispersos, 1 = anillo formado
+uniform float uAspect;
+uniform vec2 uMouse;        // cursor en coordenadas de pantalla (-1..1)
+uniform float uRepel;       // 0..1: fuerza con la que el cursor aparta los puntos
+uniform vec2 uWaveOrigin;   // onda del clic
+uniform float uWaveT;       // segundos desde el clic
 varying float vInk;
 varying float vAlpha;
+varying float vBoost;
+
+mat2 rot(float a) {
+  float s = sin(a), c = cos(a);
+  return mat2(c, -s, s, c);
+}
 
 void main() {
-  vec4 mv = modelViewMatrix * vec4(position, 1.0);
-  gl_Position = projectionMatrix * mv;
-  gl_PointSize = max(1.5, 2.0 * aSize * uModelScale * uPxScale / -mv.z);
+  vec3 p = position;
+
+  // Intro: cada punto llega en espiral desde fuera. El retardo depende de su ángulo
+  // (no de su índice, porque el motor reordena los puntos cada frame)
+  float ang = atan(p.y, p.x);
+  float delay = 0.35 * (0.5 + 0.5 * sin(ang * 3.0));
+  float e = smoothstep(delay, delay + 0.65, uAssemble);
+  float away = 1.0 - e;
+  p.xy = rot(away * 2.6) * p.xy;
+  p *= 1.0 + away * (2.5 + 1.5 * (0.5 + 0.5 * sin(ang * 5.0)));
+  p.z += away * 2.0 * sin(ang * 2.0);
+
+  vec4 mv = modelViewMatrix * vec4(p, 1.0);
+  vec4 clip = projectionMatrix * mv;
+
+  // Interacción en pantalla: el cursor aparta los puntos y el clic lanza una onda
+  vec2 ndc = clip.xy / clip.w;
+  vec2 d = (ndc - uMouse) * vec2(uAspect, 1.0);
+  float dist = length(d);
+  vec2 dir = dist > 0.0001 ? d / dist : vec2(0.0);
+  float push = uRepel * exp(-dist * dist / 0.03) * 0.09;
+
+  vec2 dw = (ndc - uWaveOrigin) * vec2(uAspect, 1.0);
+  float dwl = length(dw);
+  vec2 dirw = dwl > 0.0001 ? dw / dwl : vec2(0.0);
+  float radius = uWaveT * 1.6;
+  float band = exp(-pow((dwl - radius) / 0.08, 2.0)) * (1.0 - smoothstep(0.2, 1.6, uWaveT));
+
+  vec2 offs = dir * push + dirw * band * 0.06;
+  offs.x /= uAspect;
+  clip.xy += offs * clip.w;
+  gl_Position = clip;
+
+  gl_PointSize = max(1.5, 2.0 * aSize * uModelScale * uPxScale / -mv.z) * (1.0 + away * 1.5);
+  vBoost = push * 8.0 + band;
   vInk = aInk;
-  vAlpha = aAlpha * uOpacity;
+  vAlpha = aAlpha * uOpacity * e;
 }
 `
 
@@ -27,12 +71,14 @@ uniform vec3 uFar;
 uniform float uGlow;
 varying float vInk;
 varying float vAlpha;
+varying float vBoost;
 
 void main() {
   float d = length(gl_PointCoord - 0.5);
   float a = 1.0 - smoothstep(0.42, 0.5, d);
   if (a <= 0.0) discard;
   vec3 col = mix(uFar, uColor, vInk) * (0.7 + vInk * vInk * 1.3 * uGlow);
+  col += uColor * vBoost * 1.4;
   gl_FragColor = vec4(col, a * vAlpha);
 }
 `

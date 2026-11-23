@@ -207,6 +207,9 @@ section { position: relative; padding: 18vh var(--pad); }
   transition: background-color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
 }
 .card:hover { background: rgb(26 30 40 / 0.96); border-color: var(--line-2); }
+.card > * { transition: opacity var(--t-mid) var(--ease); }
+.cards.is-focus .card:not(.is-hover) { background: rgb(17 20 28 / 0.3); }
+.cards.is-focus .card:not(.is-hover) > * { opacity: 0.3; }
 .card__top { display: flex; justify-content: space-between; color: var(--mute); }
 .card__num { color: var(--mute); font-variant-numeric: tabular-nums; }
 .card__title { font-size: clamp(1.6rem, 2.3vw, 2.3rem); font-weight: 500; line-height: 1.05; letter-spacing: -0.02em; margin-top: auto; }
@@ -421,7 +424,8 @@ main, .hud--side, .hud--bottom { transition: opacity var(--t-in) var(--ease); }
 }
 .dossier__panel {
   position: relative; height: 100%; overflow-y: auto; overscroll-behavior: contain;
-  background: rgb(11 13 20 / 0.97); border-left: 1px solid var(--line);
+  --panel-a: 0.97;
+  background: rgb(11 13 20 / var(--panel-a)); border-left: 1px solid var(--line);
   padding: 0 clamp(24px, 4vw, 64px) 64px;
   clip-path: inset(0 0 0 100%);
 }
