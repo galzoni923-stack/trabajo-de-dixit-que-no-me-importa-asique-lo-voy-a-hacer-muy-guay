@@ -20,20 +20,20 @@ const BASE = import.meta.env.BASE_URL
 const FONT = `${BASE}fonts/space-grotesk-latin-500-normal.woff`
 const FONT_BOLD = `${BASE}fonts/space-grotesk-latin-700-normal.woff`
 
-// Estado visual de cada sección. GSAP interpola los números; `orb` es lo que el orbe
-// "está haciendo" en esa sección (uno de los nueve estados de thinking-orbs).
+// Estado visual de cada sección. GSAP interpola entre ellos.
+// El orbe es siempre el mismo: el anillo "breathing" de thinking-orbs.
+const ORB_STATE = 'breathing'
+const ORB_RADIUS = 2
 const PRESETS = {
-  inicio:     { orb: 'working',    coreX: 0,    coreY: 0,    coreScale: 1,    camZ: 6.2, hue: 0.54, danger: 0,    ring: 0, words: 0, glow: 1,   spin: 1 },
-  manifiesto: { orb: 'listening',  coreX: 0,    coreY: 0,    coreScale: 0.9,  camZ: 7.4, hue: 0.56, danger: 0,    ring: 0, words: 1, glow: 1,   spin: 0.8 },
-  anatomia:   { orb: 'composing',  coreX: 0,    coreY: 0,    coreScale: 0.7,  camZ: 8.5, hue: 0.54, danger: 0.5,  ring: 0, words: 0, glow: 1,   spin: 1 },
-  delitos:    { orb: 'solving',    coreX: 2.3,  coreY: 0,    coreScale: 1,    camZ: 7.0, hue: 0.54, danger: 0.9,  ring: 1, words: 0, glow: 1.2, spin: 1.3 },
-  fraudes:    { orb: 'weaving',    coreX: 3.0,  coreY: 1.25, coreScale: 0.75, camZ: 7.6, hue: 0.07, danger: 0.55, ring: 0, words: 0, glow: 1.2, spin: 1.2 },
-  detecta:    { orb: 'searching',  coreX: 3.0,  coreY: -0.4, coreScale: 0.85, camZ: 7.0, hue: 0.72, danger: 0.2,  ring: 0, words: 0, glow: 1,   spin: 1 },
-  consejos:   { orb: 'breathing',  coreX: 2.55, coreY: 0,    coreScale: 1,    camZ: 6.8, hue: 0.5,  danger: 0,    ring: 0, words: 0, glow: 1.3, spin: 0.7 },
-  fuentes:    { orb: 'connecting', coreX: 3.1,  coreY: 1.5,  coreScale: 0.6,  camZ: 10,  hue: 0.55, danger: 0,    ring: 0, words: 0, glow: 1.1, spin: 0.8 },
+  inicio:     { coreX: 0,    coreY: 0,    coreScale: 1,    camZ: 6.2, hue: 0.54, danger: 0,    ring: 0, words: 0, glow: 1.3, spin: 0.7 },
+  manifiesto: { coreX: 0,    coreY: 0,    coreScale: 0.9,  camZ: 7.4, hue: 0.56, danger: 0,    ring: 0, words: 1, glow: 1.3, spin: 0.7 },
+  anatomia:   { coreX: 0,    coreY: 0,    coreScale: 0.7,  camZ: 8.5, hue: 0.54, danger: 0.5,  ring: 0, words: 0, glow: 1.3, spin: 0.7 },
+  delitos:    { coreX: 2.3,  coreY: 0,    coreScale: 1,    camZ: 7.0, hue: 0.54, danger: 0.9,  ring: 1, words: 0, glow: 1.3, spin: 0.7 },
+  fraudes:    { coreX: 3.0,  coreY: 0.85, coreScale: 0.75, camZ: 7.6, hue: 0.07, danger: 0.55, ring: 0, words: 0, glow: 1.3, spin: 0.7 },
+  detecta:    { coreX: 3.0,  coreY: -0.4, coreScale: 0.85, camZ: 7.0, hue: 0.72, danger: 0.2,  ring: 0, words: 0, glow: 1.3, spin: 0.7 },
+  consejos:   { coreX: 2.8,  coreY: 0,    coreScale: 0.85,  camZ: 6.8, hue: 0.5,  danger: 0,    ring: 0, words: 0, glow: 1.3, spin: 0.7 },
+  fuentes:    { coreX: 3.1,  coreY: 1.5,  coreScale: 0.6,  camZ: 10,  hue: 0.55, danger: 0,    ring: 0, words: 0, glow: 1.3, spin: 0.7 },
 }
-
-const numbers = ({ orb, ...rest }) => rest
 
 const RED = new THREE.Color('#e5484d')
 const WHITE = new THREE.Color('#ffffff')
@@ -45,7 +45,7 @@ export class Scene {
     this.lowPower = lowPower
     this.reducedMotion = reducedMotion
     this.section = 'inicio'
-    this.state = { ...numbers(PRESETS.inicio), camX: 0, intro: 0, burst: 0, focus: 0 }
+    this.state = { ...PRESETS.inicio, camX: 0, intro: 0, burst: 0, focus: 0 }
     this.pointer = new THREE.Vector2()
     this.pointerSmooth = new THREE.Vector2()
     this.velocity = 0
@@ -93,11 +93,11 @@ export class Scene {
   }
 
   initOrb() {
-    // El orbe de puntos sustituye al antiguo cristal: cambia de estado con cada sección
+    // El orbe de puntos: el mismo anillo en toda la web; lo que cambia es su sitio y su color
     this.coreGroup = new THREE.Group()
     this.tilt = new THREE.Group()
-    this.orb = new Orb({ radius: 1.35 })
-    this.orb.setState(PRESETS.inicio.orb, true)
+    this.orb = new Orb({ radius: ORB_RADIUS })
+    this.orb.setState(ORB_STATE, true)
     this.tilt.add(this.orb.group)
     this.coreGroup.add(this.tilt)
     this.world.add(this.coreGroup)
@@ -233,8 +233,7 @@ export class Scene {
     if (!PRESETS[name]) return
     this.section = name
     if (this.state.focus > 0.01) return // un dossier abierto manda
-    this.orb.setState(PRESETS[name].orb, immediate)
-    this.tweenTo(numbers(PRESETS[name]), immediate ? 0 : 2.2)
+    this.tweenTo(PRESETS[name], immediate ? 0 : 2.2)
   }
 
   tweenTo(preset, duration = 2) {
@@ -246,13 +245,12 @@ export class Scene {
     })
   }
 
-  // Al abrir el dossier de una estafa, el orbe pasa a "buscar" y se tiñe de su color
+  // Al abrir el dossier de una estafa, el orbe se coloca a la izquierda y se tiñe de su color
   focus(scam) {
     this.state.focus = 1
     this.pulse(1)
-    this.orb.setState('searching')
     this.tweenTo(
-      { coreX: this.isMobile ? 0 : -2.35, coreY: 0, coreScale: 1.25, camZ: 6.6, hue: scam.hue, danger: 0.25, ring: 0, words: 0, glow: 1.4, spin: 1.4 },
+      { coreX: this.isMobile ? 0 : -2.35, coreY: 0, coreScale: 1, camZ: 6.6, hue: scam.hue, danger: 0.25, ring: 0, words: 0, glow: 1.3, spin: 0.7 },
       1.6
     )
     this.ringTexts.forEach((t) => (t.color = t.userData.id === scam.id ? 0xffffff : 0xcfefff))
@@ -261,8 +259,7 @@ export class Scene {
   unfocus() {
     this.state.focus = 0
     this.pulse(0.6)
-    this.orb.setState(PRESETS[this.section].orb)
-    this.tweenTo(numbers(PRESETS[this.section]), 1.8)
+    this.tweenTo(PRESETS[this.section], 1.8)
   }
 
   setHover(hue) {

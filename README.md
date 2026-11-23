@@ -18,7 +18,7 @@ npm run preview   # sirve /dist para comprobarla
 | --- | --- |
 | `src/data/content.js` | **Todo el texto**: las 15 estafas, los 10 consejos, el juego y las fuentes. Es lo que hay que revisar y reescribir con vuestras palabras. |
 | `src/webgl/Scene.js` | La escena 3D: el orbe, las partículas, el texto 3D y el post-procesado. |
-| `src/webgl/Orb.js` | Pinta en Three.js los puntos que calcula el motor de thinking-orbs y funde un estado con el siguiente. |
+| `src/webgl/Orb.js` | Pinta en Three.js los puntos que calcula el motor de thinking-orbs. |
 | `src/webgl/shaders.js` | Los shaders GLSL: los puntos del orbe, las partículas y el efecto de "señal interceptada". |
 | `src/ui/dossier.js` | La página de cada estafa (se abre con `#/phishing`, `#/bizum`, etc.), con el diagrama animado "Ruta del ataque". |
 | `src/ui/quiz.js` | El minijuego "¿Estafa o legítimo?". |
@@ -28,20 +28,7 @@ npm run preview   # sirve /dist para comprobarla
 
 ## La idea visual
 
-El elemento central es un orbe de puntos que "piensa" en lo que estás leyendo. Su geometría viene del motor de [thinking-orbs](https://github.com/Jakubantalik/thinking-orbs) (MIT © Jakub Antalik) y se pinta en Three.js con bloom y profundidad real. Cambia de estado en cada sección:
-
-| Sección | Estado del orbe |
-| --- | --- |
-| Portada | `working`: partículas en órbitas |
-| Por qué importa | `listening`: una onda recorre los anillos |
-| Anatomía de una estafa | `composing`: una cinta que se escribe |
-| Delitos informáticos | `solving`: bandas que se desordenan (en rojo) |
-| Fraudes cotidianos | `weaving`: hilos que se trenzan, como el engaño |
-| Detecta y dossiers | `searching`: un meridiano escanea el globo |
-| Consejos generales | `breathing`: un anillo en calma |
-| Fuentes y créditos | `connecting`: una constelación que se conecta |
-
-Al hacer scroll rápido "piensa" más deprisa, y el ratón lo inclina para que se note que es 3D.
+El elemento central es un orbe de puntos: el anillo `breathing` de [thinking-orbs](https://github.com/Jakubantalik/thinking-orbs) (MIT © Jakub Antalik). Su geometría sale del motor de la librería y se pinta en Three.js con bloom y profundidad real. Es el mismo en toda la web; lo que cambia entre secciones es su posición, su tamaño y su color (rojo en Delitos informáticos, por ejemplo). Al hacer scroll rápido va más deprisa, y el ratón lo inclina para que se note que es 3D.
 
 ## Pulido con la skill unslop
 
