@@ -2,6 +2,10 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
 
+// Minúsculas y símbolos estrechos: ocupan lo mismo que el texto real y no lo hacen saltar de línea
+const CHARS = 'abcdefghijklmnopqrstuvwxyz01<>/*+=_'
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
+
 // Cursor personalizado
 export function initCursor() {
   const el = document.querySelector('.cursor')
@@ -29,8 +33,25 @@ export function initCursor() {
 export function initCards(scams, scene) {
   document.querySelectorAll('.card').forEach((card) => {
     const scam = scams.find((s) => s.id === card.dataset.id)
+    const title = card.querySelector('.card__title')
+    // Al pasar por encima, el título se reescribe carácter a carácter
+    const scramble = () => {
+      if (reduced) return
+      // Fija la altura mientras dura el efecto para que la tarjeta no salte si el texto cambia de línea
+      title.style.height = `${title.offsetHeight}px`
+      gsap.to(title, {
+        duration: 0.7,
+        scrambleText: { text: scam.title, chars: CHARS, speed: 1 },
+        overwrite: true,
+        onComplete: () => (title.style.height = ''),
+      })
+    }
     // El color de la estafa vive solo en la escena 3D (el "momento"), no en la interfaz
-    card.addEventListener('pointerenter', () => scene?.setHover(scam.hue))
+    card.addEventListener('pointerenter', () => {
+      scene?.setHover(scam.hue)
+      scramble()
+    })
+    card.addEventListener('focus', scramble)
     card.addEventListener('pointerleave', () => scene?.setHover(null))
   })
 }
