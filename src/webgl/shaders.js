@@ -1,106 +1,39 @@
 // Shaders GLSL de la escena.
-// El "núcleo" es un cristal facetado que representa tu identidad digital:
-// con cada estafa se rompe en pedazos, y con los consejos se vuelve a unir.
 
-const rotate = /* glsl */ `
-mat3 rotAxis(vec3 axis, float a) {
-  axis = normalize(axis);
-  float s = sin(a), c = cos(a), oc = 1.0 - c;
-  return mat3(
-    oc * axis.x * axis.x + c,          oc * axis.x * axis.y + axis.z * s, oc * axis.z * axis.x - axis.y * s,
-    oc * axis.x * axis.y - axis.z * s, oc * axis.y * axis.y + c,          oc * axis.y * axis.z + axis.x * s,
-    oc * axis.z * axis.x + axis.y * s, oc * axis.y * axis.z - axis.x * s, oc * axis.z * axis.z + c
-  );
-}
-`
-
-export const crystalVertex = /* glsl */ `
-uniform float uTime;
-uniform float uFracture;
-#ifdef FRACTURE
-attribute vec3 aCenter;
-attribute float aRand;
-#endif
-varying vec3 vNormal;
-varying vec3 vViewDir;
-varying vec3 vLocal;
-varying float vRand;
-
-${rotate}
+// Orbe de puntos (geometría de thinking-orbs). Cada punto es un disco mate;
+// la profundidad se lee en el tamaño y en la "tinta": lo cercano es claro y brilla.
+export const orbVertex = /* glsl */ `
+attribute float aSize;
+attribute float aInk;
+attribute float aAlpha;
+uniform float uPxScale;     // píxeles por unidad de mundo a distancia 1
+uniform float uModelScale;  // escala del orbe en el mundo
+uniform float uOpacity;
+varying float vInk;
+varying float vAlpha;
 
 void main() {
-  vec3 p = position;
-  vec3 n = normal;
-  vRand = 0.5;
-
-  #ifdef FRACTURE
-    // Cada cara del cristal se separa desde su centro y gira sobre sí misma
-    vec3 dir = normalize(aCenter);
-    float push = uFracture * (0.25 + aRand * 1.6);
-    vec3 local = position - aCenter;
-    vec3 axis = vec3(aRand - 0.5, 0.8, 0.3 + aRand);
-    float ang = uFracture * (aRand * 5.0 - 2.5) + sin(uTime * 0.7 + aRand * 20.0) * 0.25 * uFracture;
-    mat3 R = rotAxis(axis, ang);
-    local = R * local * (1.0 - uFracture * 0.3);
-    p = aCenter + dir * push + local;
-    p += dir * sin(uTime * 1.3 + aRand * 6.2831) * 0.012;
-    n = R * normal;
-    vRand = aRand;
-  #endif
-
-  vec4 pos = vec4(p, 1.0);
-  #ifdef USE_INSTANCING
-    pos = instanceMatrix * pos;
-    n = mat3(instanceMatrix) * n;
-  #endif
-
-  vec4 world = modelMatrix * pos;
-  vNormal = normalize(mat3(modelMatrix) * n);
-  vViewDir = normalize(cameraPosition - world.xyz);
-  vLocal = p;
-  gl_Position = projectionMatrix * viewMatrix * world;
+  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  gl_Position = projectionMatrix * mv;
+  gl_PointSize = max(1.5, 2.0 * aSize * uModelScale * uPxScale / -mv.z);
+  vInk = aInk;
+  vAlpha = aAlpha * uOpacity;
 }
 `
 
-export const crystalFragment = /* glsl */ `
-uniform float uTime;
-uniform vec3 uColorA;   // cuerpo (oscuro)
-uniform vec3 uColorB;   // brillo / borde
-uniform vec3 uColorC;   // especular
+export const orbFragment = /* glsl */ `
+uniform vec3 uColor;
+uniform vec3 uFar;
 uniform float uGlow;
-uniform float uFracture;
-varying vec3 vNormal;
-varying vec3 vViewDir;
-varying vec3 vLocal;
-varying float vRand;
+varying float vInk;
+varying float vAlpha;
 
 void main() {
-  vec3 n = normalize(vNormal);
-  if (!gl_FrontFacing) n = -n;
-  vec3 v = normalize(vViewDir);
-  float ndv = clamp(dot(n, v), 0.0, 1.0);
-  float fres = pow(1.0 - ndv, 2.6);
-
-  vec3 L = normalize(vec3(0.4, 0.9, 0.6));
-  float spec = pow(max(dot(reflect(-L, n), v), 0.0), 28.0);
-  vec3 L2 = normalize(vec3(-0.8, -0.3, 0.4));
-  float spec2 = pow(max(dot(reflect(-L2, n), v), 0.0), 12.0);
-
-  // Iridiscencia tipo película fina
-  float t = ndv * 1.4 + uTime * 0.06 + dot(n, vec3(0.2, 0.5, 0.3)) + vRand * 0.4;
-  vec3 irid = 0.5 + 0.5 * cos(6.28318 * (vec3(0.0, 0.33, 0.67) + t));
-
-  // Líneas de escaneo que recorren el cristal
-  float scan = smoothstep(0.988, 1.0, sin(vLocal.y * 34.0 - uTime * 2.2) * 0.5 + 0.5);
-
-  vec3 col = uColorA;
-  col += mix(uColorB, irid, 0.22) * fres * 1.7 * uGlow;
-  col += uColorC * spec * 1.3;
-  col += uColorB * spec2 * 0.18;
-  col += uColorB * scan * 0.45 * uGlow;
-  col += uColorB * uFracture * vRand * 0.12;
-
-  gl_FragColor = vec4(col, 1.0);
+  float d = length(gl_PointCoord - 0.5);
+  float a = 1.0 - smoothstep(0.42, 0.5, d);
+  if (a <= 0.0) discard;
+  vec3 col = mix(uFar, uColor, vInk) * (0.7 + vInk * vInk * 1.3 * uGlow);
+  gl_FragColor = vec4(col, a * vAlpha);
 }
 `
 

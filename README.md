@@ -17,8 +17,9 @@ npm run preview   # sirve /dist para comprobarla
 | Archivo | Qué hace |
 | --- | --- |
 | `src/data/content.js` | **Todo el texto**: las 15 estafas, los 10 consejos, el juego y las fuentes. Es lo que hay que revisar y reescribir con vuestras palabras. |
-| `src/webgl/Scene.js` | La escena 3D: el cristal (tu identidad digital), los fragmentos, las partículas, el texto 3D y el post-procesado. |
-| `src/webgl/shaders.js` | Los shaders GLSL: el cristal que se rompe, las partículas y el efecto de "señal interceptada". |
+| `src/webgl/Scene.js` | La escena 3D: el orbe, las partículas, el texto 3D y el post-procesado. |
+| `src/webgl/Orb.js` | Pinta en Three.js los puntos que calcula el motor de thinking-orbs y funde un estado con el siguiente. |
+| `src/webgl/shaders.js` | Los shaders GLSL: los puntos del orbe, las partículas y el efecto de "señal interceptada". |
 | `src/ui/dossier.js` | La página de cada estafa (se abre con `#/phishing`, `#/bizum`, etc.), con el diagrama animado "Ruta del ataque". |
 | `src/ui/quiz.js` | El minijuego "¿Estafa o legítimo?". |
 | `src/ui/anatomy.js` | Motion graphic "Anatomía de una estafa": secuencia controlada por el scroll (tipografía cinética, SMS anotado, robo de datos y defensa). |
@@ -27,9 +28,20 @@ npm run preview   # sirve /dist para comprobarla
 
 ## La idea visual
 
-El cristal central representa **tu identidad digital**. En los bloques de estafas se rompe en pedazos y se tiñe de rojo.
-En "Consejos generales" se vuelve a unir: protegerse es recomponerlo. Al hacer scroll rápido o abrir un dossier aparece
-una interferencia de señal, como si alguien estuviera interceptando la conexión.
+El elemento central es un orbe de puntos que "piensa" en lo que estás leyendo. Su geometría viene del motor de [thinking-orbs](https://github.com/Jakubantalik/thinking-orbs) (MIT © Jakub Antalik) y se pinta en Three.js con bloom y profundidad real. Cambia de estado en cada sección:
+
+| Sección | Estado del orbe |
+| --- | --- |
+| Portada | `working`: partículas en órbitas |
+| Por qué importa | `listening`: una onda recorre los anillos |
+| Anatomía de una estafa | `composing`: una cinta que se escribe |
+| Delitos informáticos | `solving`: bandas que se desordenan (en rojo) |
+| Fraudes cotidianos | `weaving`: hilos que se trenzan, como el engaño |
+| Detecta y dossiers | `searching`: un meridiano escanea el globo |
+| Consejos generales | `breathing`: un anillo en calma |
+| Fuentes y créditos | `connecting`: una constelación que se conecta |
+
+Al hacer scroll rápido "piensa" más deprisa, y el ratón lo inclina para que se note que es 3D.
 
 ## Pulido con la skill unslop
 

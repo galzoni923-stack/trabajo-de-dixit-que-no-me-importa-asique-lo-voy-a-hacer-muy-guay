@@ -521,6 +521,9 @@ section { position: relative; padding: 18vh var(--pad); }
 .credits { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--pad); margin-top: 12vh; }
 .credits__label { color: var(--mute); margin-bottom: 10px; }
 .credits__names, .credits__course, .credits__tech { font-size: 1.05rem; }
+.credits__note { margin-top: 8px; font-size: 13px; color: var(--mute); }
+.credits__note a { text-decoration: underline; text-underline-offset: 3px; transition: color var(--t-fast) var(--ease); }
+.credits__note a:hover { color: var(--ink); }
 .outro { padding: 14vh 0 12vh; display: flex; flex-direction: column; align-items: center; gap: 8vh; }
 .outro__words {
   font-size: clamp(3rem, 9vw, 10rem); letter-spacing: -0.03em; line-height: 1; text-align: center;

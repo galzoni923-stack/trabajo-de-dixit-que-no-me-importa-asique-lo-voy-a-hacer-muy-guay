@@ -13,25 +13,29 @@ import { Text } from 'troika-three-text'
 export { preloadFont } from 'troika-three-text'
 import gsap from 'gsap'
 import { SignalEffect } from './SignalEffect.js'
-import { crystalVertex, crystalFragment, particlesVertex, particlesFragment } from './shaders.js'
+import { Orb } from './Orb.js'
+import { particlesVertex, particlesFragment } from './shaders.js'
 
 const BASE = import.meta.env.BASE_URL
 const FONT = `${BASE}fonts/space-grotesk-latin-500-normal.woff`
 const FONT_BOLD = `${BASE}fonts/space-grotesk-latin-700-normal.woff`
 
-// Estado visual de cada sección. GSAP interpola entre ellos.
+// Estado visual de cada sección. GSAP interpola los números; `orb` es lo que el orbe
+// "está haciendo" en esa sección (uno de los nueve estados de thinking-orbs).
 const PRESETS = {
-  inicio:     { coreX: 0,    coreY: 0,    coreScale: 0.78,  fracture: 0,    camZ: 6.2, hue: 0.54, danger: 0,    ring: 0, words: 0, shell: 0.5, glow: 1,   spin: 1 },
-  manifiesto: { coreX: 0,    coreY: 0,    coreScale: 0.75, fracture: 0.28, camZ: 7.4, hue: 0.56, danger: 0,    ring: 0, words: 1, shell: 0.3, glow: 1.1, spin: 0.6 },
-  anatomia:   { coreX: 0,    coreY: 0,    coreScale: 0.55, fracture: 0.5,  camZ: 8.5, hue: 0.54, danger: 0.5,  ring: 0, words: 0, shell: 0.2, glow: 1.1, spin: 1.2 },
-  delitos:    { coreX: 2.3,  coreY: 0,    coreScale: 0.8,  fracture: 0.8,  camZ: 7.0, hue: 0.54, danger: 0.9,  ring: 1, words: 0, shell: 0.15, glow: 1.3, spin: 1.6 },
-  fraudes:    { coreX: 3.0,  coreY: 1.25, coreScale: 0.55, fracture: 0.85, camZ: 7.6, hue: 0.07, danger: 0.55, ring: 0, words: 0, shell: 0.1, glow: 1.3, spin: 2 },
-  detecta:    { coreX: 3.0,  coreY: -0.4, coreScale: 0.62, fracture: 0.45, camZ: 7.0, hue: 0.72, danger: 0.2,  ring: 0, words: 0, shell: 0.3, glow: 1,   spin: 1 },
-  consejos:   { coreX: 2.55, coreY: 0,    coreScale: 0.78, fracture: 0,    camZ: 6.8, hue: 0.5,  danger: 0,    ring: 0, words: 0, shell: 0.9, glow: 1.6, spin: 0.5 },
-  fuentes:    { coreX: 3.1,  coreY: 1.5,  coreScale: 0.45, fracture: 0.12, camZ: 10,  hue: 0.55, danger: 0,    ring: 0, words: 0, shell: 0.4, glow: 1.2, spin: 0.4 },
+  inicio:     { orb: 'working',    coreX: 0,    coreY: 0,    coreScale: 1,    camZ: 6.2, hue: 0.54, danger: 0,    ring: 0, words: 0, glow: 1,   spin: 1 },
+  manifiesto: { orb: 'listening',  coreX: 0,    coreY: 0,    coreScale: 0.9,  camZ: 7.4, hue: 0.56, danger: 0,    ring: 0, words: 1, glow: 1,   spin: 0.8 },
+  anatomia:   { orb: 'composing',  coreX: 0,    coreY: 0,    coreScale: 0.7,  camZ: 8.5, hue: 0.54, danger: 0.5,  ring: 0, words: 0, glow: 1,   spin: 1 },
+  delitos:    { orb: 'solving',    coreX: 2.3,  coreY: 0,    coreScale: 1,    camZ: 7.0, hue: 0.54, danger: 0.9,  ring: 1, words: 0, glow: 1.2, spin: 1.3 },
+  fraudes:    { orb: 'weaving',    coreX: 3.0,  coreY: 1.25, coreScale: 0.75, camZ: 7.6, hue: 0.07, danger: 0.55, ring: 0, words: 0, glow: 1.2, spin: 1.2 },
+  detecta:    { orb: 'searching',  coreX: 3.0,  coreY: -0.4, coreScale: 0.85, camZ: 7.0, hue: 0.72, danger: 0.2,  ring: 0, words: 0, glow: 1,   spin: 1 },
+  consejos:   { orb: 'breathing',  coreX: 2.55, coreY: 0,    coreScale: 1,    camZ: 6.8, hue: 0.5,  danger: 0,    ring: 0, words: 0, glow: 1.3, spin: 0.7 },
+  fuentes:    { orb: 'connecting', coreX: 3.1,  coreY: 1.5,  coreScale: 0.6,  camZ: 10,  hue: 0.55, danger: 0,    ring: 0, words: 0, glow: 1.1, spin: 0.8 },
 }
 
-const RED = new THREE.Color('#ff2d4b')
+const numbers = ({ orb, ...rest }) => rest
+
+const RED = new THREE.Color('#e5484d')
 const WHITE = new THREE.Color('#ffffff')
 
 export class Scene {
@@ -41,22 +45,20 @@ export class Scene {
     this.lowPower = lowPower
     this.reducedMotion = reducedMotion
     this.section = 'inicio'
-    this.state = { ...PRESETS.inicio, camX: 0, intro: 0, burst: 0, focus: 0 }
+    this.state = { ...numbers(PRESETS.inicio), camX: 0, intro: 0, burst: 0, focus: 0 }
     this.pointer = new THREE.Vector2()
     this.pointerSmooth = new THREE.Vector2()
     this.velocity = 0
     this.hoverHue = null
     this.hoverMix = { v: 0 }
-    this.colA = new THREE.Color()
     this.colB = new THREE.Color()
     this.tmpColor = new THREE.Color()
+    this.bufferSize = new THREE.Vector2()
 
     this.initRenderer()
     this.initScene()
-    this.initCore()
-    this.initDebris()
+    this.initOrb()
     this.initParticles()
-    this.initOrbits()
     this.initText()
     this.initPost()
     this.onResize()
@@ -90,93 +92,15 @@ export class Scene {
     this.scene.add(this.world)
   }
 
-  initCore() {
+  initOrb() {
+    // El orbe de puntos sustituye al antiguo cristal: cambia de estado con cada sección
     this.coreGroup = new THREE.Group()
+    this.tilt = new THREE.Group()
+    this.orb = new Orb({ radius: 1.35 })
+    this.orb.setState(PRESETS.inicio.orb, true)
+    this.tilt.add(this.orb.group)
+    this.coreGroup.add(this.tilt)
     this.world.add(this.coreGroup)
-
-    // Cristal: icosaedro facetado. Cada triángulo guarda su centro para poder "romperse".
-    const geo = new THREE.IcosahedronGeometry(1.05, 1)
-    geo.computeVertexNormals()
-    const pos = geo.attributes.position
-    const count = pos.count
-    const centers = new Float32Array(count * 3)
-    const rands = new Float32Array(count)
-    for (let i = 0; i < count; i += 3) {
-      const cx = (pos.getX(i) + pos.getX(i + 1) + pos.getX(i + 2)) / 3
-      const cy = (pos.getY(i) + pos.getY(i + 1) + pos.getY(i + 2)) / 3
-      const cz = (pos.getZ(i) + pos.getZ(i + 1) + pos.getZ(i + 2)) / 3
-      const r = Math.random()
-      for (let k = 0; k < 3; k++) {
-        centers.set([cx, cy, cz], (i + k) * 3)
-        rands[i + k] = r
-      }
-    }
-    geo.setAttribute('aCenter', new THREE.BufferAttribute(centers, 3))
-    geo.setAttribute('aRand', new THREE.BufferAttribute(rands, 1))
-
-    this.crystalUniforms = {
-      uTime: { value: 0 },
-      uFracture: { value: 0 },
-      uColorA: { value: new THREE.Color('#050a12') },
-      uColorB: { value: new THREE.Color('#7fdcff') },
-      uColorC: { value: new THREE.Color('#ffffff') },
-      uGlow: { value: 1 },
-    }
-    this.coreMat = new THREE.ShaderMaterial({
-      vertexShader: crystalVertex,
-      fragmentShader: crystalFragment,
-      uniforms: this.crystalUniforms,
-      defines: { FRACTURE: '' },
-      side: THREE.DoubleSide,
-    })
-    this.core = new THREE.Mesh(geo, this.coreMat)
-    this.coreGroup.add(this.core)
-
-    // Núcleo de energía que aparece al romperse el cristal
-    this.heartMat = new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false, fog: false })
-    this.heart = new THREE.Mesh(new THREE.IcosahedronGeometry(0.42, 3), this.heartMat)
-    this.coreGroup.add(this.heart)
-
-    // Carcasa de alambre exterior
-    this.shellMat = new THREE.LineBasicMaterial({
-      color: 0x9fe8ff,
-      transparent: true,
-      opacity: 0.2,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    })
-    this.shell = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(1.75, 1)), this.shellMat)
-    this.coreGroup.add(this.shell)
-  }
-
-  initDebris() {
-    // Fragmentos que orbitan como un cinturón de asteroides
-    const N = this.lowPower ? 90 : 180
-    const geo = new THREE.TetrahedronGeometry(1, 0)
-    geo.computeVertexNormals()
-    const mat = new THREE.ShaderMaterial({
-      vertexShader: crystalVertex,
-      fragmentShader: crystalFragment,
-      uniforms: this.crystalUniforms,
-      side: THREE.DoubleSide,
-    })
-    this.debris = new THREE.InstancedMesh(geo, mat, N)
-    this.debris.frustumCulled = false
-    this.debrisData = Array.from({ length: N }, () => ({
-      angle: Math.random() * Math.PI * 2,
-      radius: 1.9 + Math.random() * 1.1,
-      height: (Math.random() - 0.5) * 0.5,
-      speed: (0.04 + Math.random() * 0.12) * (Math.random() < 0.15 ? -1 : 1),
-      scale: 0.025 + Math.pow(Math.random(), 2.2) * 0.13,
-      spread: 0.6 + Math.random() * 3.4,
-      rot: new THREE.Euler(Math.random() * 6, Math.random() * 6, Math.random() * 6),
-      rotSpeed: 0.2 + Math.random() * 1.5,
-    }))
-    this.dummy = new THREE.Object3D()
-    this.debrisGroup = new THREE.Group()
-    this.debrisGroup.rotation.set(0.35, 0, -0.18)
-    this.debrisGroup.add(this.debris)
-    this.coreGroup.add(this.debrisGroup)
   }
 
   initParticles() {
@@ -216,24 +140,6 @@ export class Scene {
       })
     )
     this.scene.add(this.particles)
-  }
-
-  initOrbits() {
-    this.orbits = new THREE.Group()
-    const mk = (r, tilt, op) => {
-      const m = new THREE.Mesh(
-        new THREE.TorusGeometry(r, 0.0035, 6, 320),
-        new THREE.MeshBasicMaterial({ color: 0x9fe8ff, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false })
-      )
-      m.rotation.set(Math.PI / 2 + tilt[0], tilt[1], tilt[2])
-      m.userData.baseOpacity = op
-      this.orbits.add(m)
-      return m
-    }
-    mk(2.45, [0.35, 0, -0.18], 0.35)
-    mk(3.1, [-0.2, 0.3, 0.1], 0.18)
-    mk(3.9, [0.1, -0.25, 0.3], 0.1)
-    this.coreGroup.add(this.orbits)
   }
 
   initText() {
@@ -295,11 +201,11 @@ export class Scene {
     this.composer.addPass(new RenderPass(this.scene, this.camera))
 
     this.bloom = new BloomEffect({
-      intensity: 1.35,
-      luminanceThreshold: 0.12,
+      intensity: 1.2,
+      luminanceThreshold: 0.2,
       luminanceSmoothing: 0.35,
       mipmapBlur: true,
-      radius: 0.72,
+      radius: 0.6,
     })
     const tone = new ToneMappingEffect({ mode: ToneMappingMode.ACES_FILMIC })
     const vignette = new VignetteEffect({ darkness: 0.62, offset: 0.28 })
@@ -327,7 +233,8 @@ export class Scene {
     if (!PRESETS[name]) return
     this.section = name
     if (this.state.focus > 0.01) return // un dossier abierto manda
-    this.tweenTo(PRESETS[name], immediate ? 0 : 2.2)
+    this.orb.setState(PRESETS[name].orb, immediate)
+    this.tweenTo(numbers(PRESETS[name]), immediate ? 0 : 2.2)
   }
 
   tweenTo(preset, duration = 2) {
@@ -339,12 +246,13 @@ export class Scene {
     })
   }
 
-  // Al abrir el dossier de una estafa: el cristal estalla y se tiñe de su color
+  // Al abrir el dossier de una estafa, el orbe pasa a "buscar" y se tiñe de su color
   focus(scam) {
     this.state.focus = 1
     this.pulse(1)
+    this.orb.setState('searching')
     this.tweenTo(
-      { coreX: this.isMobile ? 0 : -2.35, coreY: 0, coreScale: 1.05, fracture: 1.15, camZ: 6.6, hue: scam.hue, danger: 0.25, ring: 0, words: 0, shell: 0.15, glow: 1.6, spin: 2.4 },
+      { coreX: this.isMobile ? 0 : -2.35, coreY: 0, coreScale: 1.25, camZ: 6.6, hue: scam.hue, danger: 0.25, ring: 0, words: 0, glow: 1.4, spin: 1.4 },
       1.6
     )
     this.ringTexts.forEach((t) => (t.color = t.userData.id === scam.id ? 0xffffff : 0xcfefff))
@@ -353,7 +261,8 @@ export class Scene {
   unfocus() {
     this.state.focus = 0
     this.pulse(0.6)
-    this.tweenTo(PRESETS[this.section], 1.8)
+    this.orb.setState(PRESETS[this.section].orb)
+    this.tweenTo(numbers(PRESETS[this.section]), 1.8)
   }
 
   setHover(hue) {
@@ -368,11 +277,7 @@ export class Scene {
 
   intro() {
     this.state.intro = 0
-    this.state.fracture = 1.6
-    return gsap
-      .timeline()
-      .to(this.state, { intro: 1, duration: 2.6, ease: 'expo.out' }, 0)
-      .to(this.state, { fracture: 0, duration: 3, ease: 'expo.inOut' }, 0)
+    return gsap.timeline().to(this.state, { intro: 1, duration: 2.6, ease: 'expo.out' }, 0)
   }
 
   // ───────────────────────── Bucle ─────────────────────────
@@ -384,6 +289,7 @@ export class Scene {
     this.camera.updateProjectionMatrix()
     this.renderer.setSize(w, h, false)
     this.composer.setSize(w, h)
+    this.renderer.getDrawingBufferSize(this.bufferSize)
   }
 
   update(time, delta, velocity = 0) {
@@ -398,54 +304,30 @@ export class Scene {
       const target = this.hoverHue ?? hue
       hue = THREE.MathUtils.lerp(hue, target, this.hoverMix.v)
     }
-    this.colB.setHSL(hue, 0.85, 0.62).lerp(RED, s.danger * (1 - this.hoverMix.v * 0.7))
-    this.colA.setHSL(hue, 0.6, 0.035)
-    this.crystalUniforms.uColorB.value.copy(this.colB)
-    this.crystalUniforms.uColorA.value.copy(this.colA)
-    this.crystalUniforms.uGlow.value = s.glow
-    this.crystalUniforms.uTime.value = time
-    this.crystalUniforms.uFracture.value = s.fracture + this.velocity * 0.25
-    this.heartMat.color.copy(this.colB).multiplyScalar(2.2 + Math.sin(time * 2.2) * 0.4 + s.fracture * 2)
-    this.shellMat.color.copy(this.colB)
-    this.shellMat.opacity = s.shell * 0.22 * s.intro
-    this.orbits.children.forEach((o) => {
-      o.material.color.copy(this.colB)
-      o.material.opacity = o.userData.baseOpacity * s.intro * (0.6 + s.shell * 0.6)
-    })
+    this.colB.setHSL(hue, 0.8, 0.66).lerp(RED, s.danger * (1 - this.hoverMix.v * 0.7))
+
+    // Orbe: los puntos cercanos casi blancos con un toque del color de la sección; los lejanos, apagados
+    const u = this.orb.uniforms
+    u.uColor.value.copy(this.colB).lerp(WHITE, 0.45)
+    u.uFar.value.copy(this.colB).lerp(WHITE, 0.2).multiplyScalar(0.55)
+    u.uGlow.value = s.glow * (1 + s.burst * 0.8)
     this.tmpColor.copy(this.colB).lerp(WHITE, 0.55)
+
+    const xFactor = mobile ? 0 : 1
+    this.coreGroup.position.set(s.coreX * xFactor, s.coreY + (mobile && s.coreX !== 0 ? 0.9 : 0), 0)
+    const sc = Math.max(s.coreScale * s.intro * (mobile ? 0.82 : 1) * (1 + s.burst * 0.06), 0.0001)
+    this.coreGroup.scale.setScalar(sc)
+    // El motor ya gira el orbe; el ratón lo inclina para que se note que es 3D de verdad
+    this.tilt.rotation.x = this.pointerSmooth.y * -0.35
+    this.tilt.rotation.y = this.pointerSmooth.x * 0.45
+    // Piensa más rápido mientras haces scroll
+    const speedMul = this.reducedMotion ? 0 : s.spin * (1 + this.velocity * 2.5)
+    const pxScale = (this.bufferSize.y / 2) * this.camera.projectionMatrix.elements[5]
+    this.orb.update(Math.min(delta, 0.05), speedMul, this.tmpColor, pxScale, sc)
+
     this.particleUniforms.uColor.value.copy(this.tmpColor)
     this.particleUniforms.uTime.value = time
     this.particleUniforms.uVel.value = this.velocity
-
-    // Núcleo
-    const xFactor = mobile ? 0 : 1
-    this.coreGroup.position.set(s.coreX * xFactor, s.coreY + (mobile && s.coreX !== 0 ? 0.9 : 0), 0)
-    const sc = s.coreScale * s.intro * (mobile ? 0.82 : 1)
-    this.coreGroup.scale.setScalar(Math.max(sc, 0.0001))
-    const spin = this.reducedMotion ? 0.2 : s.spin
-    this.core.rotation.y += delta * 0.18 * spin + this.velocity * 0.02
-    this.core.rotation.x = Math.sin(time * 0.2) * 0.25 + this.pointerSmooth.y * 0.3
-    this.core.rotation.z = this.pointerSmooth.x * -0.2
-    this.shell.rotation.y -= delta * 0.06 * spin
-    this.shell.rotation.x += delta * 0.03 * spin
-    this.shell.scale.setScalar(1 + s.fracture * 0.35)
-    this.heart.scale.setScalar(0.75 + s.fracture * 0.4 + Math.sin(time * 2.2) * 0.04)
-    this.orbits.rotation.y += delta * 0.05 * spin
-    this.orbits.scale.setScalar(1 + s.fracture * 0.25)
-
-    // Fragmentos
-    const d = this.dummy
-    for (let i = 0; i < this.debrisData.length; i++) {
-      const p = this.debrisData[i]
-      p.angle += delta * p.speed * spin
-      const r = p.radius + s.fracture * p.spread
-      d.position.set(Math.cos(p.angle) * r, p.height * (1 + s.fracture * 3), Math.sin(p.angle) * r)
-      d.rotation.set(p.rot.x + time * p.rotSpeed * 0.3, p.rot.y + time * p.rotSpeed * 0.2, p.rot.z)
-      d.scale.setScalar(p.scale * (0.55 + s.fracture * 0.6))
-      d.updateMatrix()
-      this.debris.setMatrixAt(i, d.matrix)
-    }
-    this.debris.instanceMatrix.needsUpdate = true
 
     // Anillo de texto
     this.ring.position.set(this.coreGroup.position.x, this.coreGroup.position.y, 0)
@@ -484,7 +366,7 @@ export class Scene {
     if (this.signal) this.signal.intensity = glitch
     const ca = 0.0005 + glitch * 0.004
     this.ca.offset.set(ca, ca * 0.6)
-    this.bloom.intensity = 1.2 + s.burst * 1.2 + s.fracture * 0.25
+    this.bloom.intensity = 1.1 + s.burst * 1.2
 
     this.composer.render(delta)
   }

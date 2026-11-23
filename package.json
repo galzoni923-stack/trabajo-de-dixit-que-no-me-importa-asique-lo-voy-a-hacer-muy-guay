@@ -20,6 +20,7 @@
     "gsap": "^3.15.1",
     "lenis": "^1.3.27",
     "postprocessing": "^6.39.6",
+    "thinking-orbs": "^0.3.1",
     "three": "^0.187.0",
     "troika-three-text": "^0.53.1"
   },
