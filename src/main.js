@@ -11,10 +11,10 @@ import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin'
 import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin'
 import Lenis from 'lenis'
 
-import { scams, quiz } from './data/content.js'
+import { scams, simulations } from './data/content.js'
 import { renderContent, pad } from './ui/render.js'
 import { Dossier } from './ui/dossier.js'
-import { initQuiz } from './ui/quiz.js'
+import { initSimulator } from './ui/simulator.js'
 import { createAnatomy } from './ui/anatomy.js'
 import { initCursor, initCards, initReveals } from './ui/interactions.js'
 
@@ -205,7 +205,7 @@ async function boot() {
   initReveals()
   initCursor()
   initCards(scams, scene)
-  initQuiz(quiz, scene)
+  initSimulator(simulations, scene)
   initScroll()
 
   // Texto del título partido en letras

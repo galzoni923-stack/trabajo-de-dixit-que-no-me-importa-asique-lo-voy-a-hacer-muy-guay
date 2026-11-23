@@ -184,43 +184,31 @@
         </div>
       </section>
 
-      <!-- 5 · DETECTA (juego) -->
-      <section id="detecta" class="quiz" data-section="detecta" data-label="Detecta">
-        <div class="quiz__intro">
+      <!-- 5 · DETECTA: simulador de conversación -->
+      <section id="detecta" class="sim" data-section="detecta" data-label="Detecta">
+        <div class="sim__intro">
           <p class="kicker mono">Ponte a prueba</p>
-          <h2 class="quiz__title" data-split>¿Estafa o legítimo?</h2>
-          <p class="quiz__lead" data-split>Ocho mensajes inspirados en casos reales: SMS, WhatsApp, llamadas, correos... Algunos son trampas, otros no. Desliza a la izquierda si es una estafa y a la derecha si es legítimo.</p>
-          <div class="quiz__score mono"><span class="quiz__step">01 / 08</span><span class="quiz__points">ACIERTOS 0</span></div>
-          <p class="quiz__keys mono"><kbd>←</kbd> estafa <kbd>→</kbd> legítimo <kbd>↵</kbd> siguiente</p>
+          <h2 class="sim__title" data-split>¿Qué harías tú?</h2>
+          <p class="sim__lead" data-split>Tres conversaciones con un estafador, inspiradas en casos reales. Tú decides qué responder en cada momento. ¿Acabas protegido o estafado?</p>
+          <ol class="sim__stories" aria-label="Historias"></ol>
+          <p class="sim__score mono">Protegido en <b>0</b> / 3</p>
+          <p class="sim__keys mono"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> responder <kbd>↵</kbd> siguiente historia</p>
         </div>
 
-        <div class="quiz__stage">
-          <div class="phone">
-            <div class="phone__glare" aria-hidden="true"></div>
-            <div class="phone__island" aria-hidden="true"></div>
-            <div class="phone__screen">
-              <div class="pstatus" aria-hidden="true">
-                <span class="pstatus__time">09:41</span>
-                <span class="pstatus__icons">
-                  <svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" /><rect x="5" y="5.5" width="3" height="6.5" rx="1" /><rect x="10" y="3" width="3" height="9" rx="1" /><rect x="15" y="0" width="3" height="12" rx="1" /></svg>
-                  <svg viewBox="0 0 16 12"><path d="M8 11.5 5.6 8.9a3.4 3.4 0 0 1 4.8 0zM3.4 6.7a6.6 6.6 0 0 1 9.2 0l-1.1 1.1a5 5 0 0 0-7 0zM1.2 4.5a9.7 9.7 0 0 1 13.6 0l-1.1 1.1a8.2 8.2 0 0 0-11.4 0z" /></svg>
-                  <svg viewBox="0 0 27 12"><rect x="0.5" y="0.5" width="23" height="11" rx="3.5" fill="none" stroke-opacity="0.4" /><rect x="2.5" y="2.5" width="16" height="7" rx="2" /><rect x="24.5" y="4" width="2" height="4" rx="1" fill-opacity="0.4" /></svg>
-                </span>
-              </div>
-              <div class="psegs" aria-hidden="true"></div>
-              <div class="pbanner" aria-hidden="true"></div>
-              <div class="pslot" aria-live="polite"></div>
-              <div class="pstamp pstamp--scam" aria-hidden="true">ESTAFA</div>
-              <div class="pstamp pstamp--legit" aria-hidden="true">LEGÍTIMO</div>
-              <div class="psheet" role="region" aria-label="Corrección" data-lenis-prevent></div>
-              <div class="presult" aria-live="polite"></div>
-              <div class="pactions">
-                <button class="pbtn pbtn--scam" data-answer="scam" data-hover aria-label="Es una estafa"><span class="pbtn__i"><svg class="i " viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span><span class="pbtn__l mono">Estafa</span></button>
-                <span class="pactions__hint mono" aria-hidden="true"><svg class="i " viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m15 18-6-6 6-6"/></svg>desliza<svg class="i " viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m9 18 6-6-6-6"/></svg></span>
-                <button class="pbtn pbtn--legit" data-answer="legit" data-hover aria-label="Es legítimo"><span class="pbtn__i"><svg class="i " viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg></span><span class="pbtn__l mono">Legítimo</span></button>
-              </div>
-              <div class="phome" aria-hidden="true"></div>
+        <div class="sim__stage">
+          <div class="chat" data-channel="whatsapp">
+            <header class="chat__head">
+              <span class="chat__avatar" aria-hidden="true">L</span>
+              <div class="chat__id"><b class="chat__name">Elige una historia</b><small class="chat__sub"></small></div>
+              <span class="chat__chip mono">WhatsApp</span>
+            </header>
+            <div class="chat__risk" aria-label="Nivel de riesgo">
+              <span class="mono">Riesgo</span>
+              <div class="chat__bar"><i></i></div>
+              <b class="mono">0 %</b>
             </div>
+            <div class="chat__log" aria-live="polite" data-lenis-prevent></div>
+            <div class="chat__choices"></div>
           </div>
         </div>
       </section>

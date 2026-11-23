@@ -272,6 +272,12 @@ export class Scene {
     gsap.to(this.hoverMix, { v: hue === null ? 0 : 1, duration: 0.8, ease: 'power3.out', overwrite: true })
   }
 
+  // El simulador tiñe el anillo hacia rojo según el riesgo de la conversación (0-1)
+  setRisk(r) {
+    if (this.section !== 'detecta' || this.state.focus > 0.01) return
+    gsap.to(this.state, { danger: 0.15 + r * 0.85, duration: 0.8, ease: 'power3.out', overwrite: false })
+  }
+
   // Ráfaga de interferencia (glitch) en el post-procesado
   pulse(amount = 1) {
     gsap.fromTo(this.state, { burst: amount }, { burst: 0, duration: 1.1, ease: 'power3.out', overwrite: false })

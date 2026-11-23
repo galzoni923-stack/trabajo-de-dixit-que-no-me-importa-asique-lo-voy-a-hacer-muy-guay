@@ -468,126 +468,308 @@ export const tips = [
   { t: 'Pide ayuda y denuncia', d: 'Llama al 017 (INCIBE, gratis y confidencial) y denuncia en la Policía o la Guardia Civil. No es culpa tuya.' },
 ]
 
-// Mini-juego "¿Estafa o legítimo?"
-// kind: sms | whatsapp | push | instagram | call | email
-// flags: fragmentos EXACTOS del texto que se marcan al corregir (rojo si es estafa, verde si es legítimo)
-// related: dossier que se recomienda repasar si fallas
-export const quiz = [
+// ─────────────────────────────────────────────────────────────
+//  SIMULADOR "¿Qué harías tú?"
+//  Tres conversaciones con un estafador. Cada historia es un grafo:
+//  - nodo normal: { msgs, choices }  (msgs del estafador o del sistema)
+//  - final:       { end: 'safe' | 'scammed', title, loss?, text }
+//  flags: fragmentos EXACTOS del texto que se marcan en el repaso final.
+//  risk: cuánto sube (o baja) el medidor de riesgo con esa respuesta.
+// ─────────────────────────────────────────────────────────────
+export const simulations = [
   {
-    kind: 'sms',
-    name: 'Correos',
-    sub: 'Mensaje de texto',
-    body: 'Su paquete ES2849XX está retenido en aduanas. Para su entrega abone 1,99€ en: correos-es-envio.com/pago',
-    scam: true,
-    related: 'paqueteria',
-    flags: [
-      { t: 'retenido en aduanas', n: 'Excusa típica. ¿De verdad esperabas un paquete de fuera?' },
-      { t: '1,99€', n: 'Cantidad pequeña para que pagues sin pensarlo.' },
-      { t: 'correos-es-envio.com/pago', n: 'No es correos.es: es un dominio que imita al real.' },
-    ],
-    why: 'Es smishing de paquetería. Consulta siempre el envío con el número de seguimiento en la web o la app oficial.',
-  },
-  {
-    kind: 'whatsapp',
-    name: '+34 6XX XXX 112',
-    sub: 'en línea',
-    body: 'Hola mamá, se me ha caído el móvil al agua 😩 este es mi número nuevo. ¿Puedes hacerme un Bizum de 380€? Es urgente, luego te explico',
-    scam: true,
-    related: 'vishing',
-    flags: [
-      { t: 'este es mi número nuevo', n: 'Un número desconocido que dice ser alguien de tu familia.' },
-      { t: 'Bizum de 380€', n: 'Pide dinero por una vía que no tiene vuelta atrás.' },
-      { t: 'Es urgente, luego te explico', n: 'Prisa y ninguna explicación: no te deja pensar.' },
-    ],
-    why: 'Es el timo del "Hola mamá". Llama al número de siempre o haz una pregunta que solo esa persona sepa contestar.',
-  },
-  {
-    kind: 'push',
-    name: 'Tu banco',
-    sub: 'Notificación de la app oficial',
-    body: 'Compra con tarjeta ****4821 por 12,40 € en MERCADONA LUGO. Si no reconoces este movimiento, revísalo en la app.',
-    scam: false,
-    related: 'phishing',
-    flags: [
-      { t: '12,40 € en MERCADONA LUGO', n: 'Datos concretos de una compra que puedes comprobar.' },
-      { t: 'revísalo en la app', n: 'Te manda a la app oficial, no a un enlace.' },
-    ],
-    why: 'Así avisa un banco de verdad: dentro de su app, sin enlaces y sin pedirte nada.',
-  },
-  {
-    kind: 'instagram',
-    name: 'nike.oficial.sorteos_es',
-    sub: '43 seguidores · No sigues esta cuenta',
-    body: '🎉 ¡Enhorabuena! Has sido seleccionado ganador de unas Air Max. Solo tienes que pagar 4,95€ de envío aquí 👉 bit.ly/premio-nk',
-    scam: true,
+    id: 'votar',
+    title: '¿Me votas?',
+    channel: 'whatsapp',
+    contact: { name: 'Lucas (clase)', sub: 'en línea' },
     related: 'redes',
-    flags: [
-      { t: 'nike.oficial.sorteos_es', n: 'Cuenta clonada: la oficial es @nike y está verificada.' },
-      { t: '43 seguidores', n: 'Una marca enorme no tiene 43 seguidores.' },
-      { t: 'pagar 4,95€ de envío', n: 'Un premio de verdad nunca se paga.' },
-      { t: 'bit.ly/premio-nk', n: 'Enlace acortado que esconde el destino real.' },
-    ],
-    why: 'Es un sorteo falso con una cuenta clonada. Las marcas nunca te cobran por darte un premio.',
+    start: 'n1',
+    nodes: {
+      n1: {
+        msgs: [
+          { text: 'Eyyy 👋 ¿me haces un favor rapidísimo?' },
+          {
+            text: 'Estoy en un concurso de baile del insti y necesito votos 🙏 Ahora te llega un código de 6 cifras por SMS, ¿me lo pasas? Es para validar tu voto',
+            flags: [
+              { t: 'un código de 6 cifras por SMS', n: 'Un código que llega por SMS es la llave de tu cuenta. Ninguna votación lo necesita.' },
+              { t: '¿me lo pasas?', n: 'Te pide que se lo reenvíes a él, no que lo uses tú.' },
+            ],
+          },
+        ],
+        choices: [
+          { text: '¡Claro! Espera que me llegue', next: 'n2', risk: 30, verdict: 'bad', why: 'Aceptas antes de saber para qué sirve ese código.' },
+          { text: '¿Qué concurso? Mándame el enlace y voto yo', next: 'n3', risk: 5, verdict: 'good', why: 'Pides comprobarlo por tu cuenta en vez de dar nada.' },
+          { text: 'Te llamo ahora y me lo cuentas', next: 'safe', risk: -20, verdict: 'good', why: 'Comprobar por otra vía es la mejor defensa.' },
+        ],
+      },
+      n2: {
+        msgs: [
+          {
+            from: 'system',
+            text: 'SMS de WhatsApp: «Tu código de WhatsApp es 482-913. No lo compartas con nadie»',
+            flags: [{ t: 'No lo compartas con nadie', n: 'El propio SMS te avisa: ese código no se comparte nunca.' }],
+          },
+          {
+            text: 'Te tiene que haber llegado ya. Date prisa que la votación se cierra en 5 minutos 😬',
+            flags: [{ t: 'la votación se cierra en 5 minutos', n: 'Prisa inventada para que no te pares a pensar.' }],
+          },
+        ],
+        choices: [
+          { text: 'Toma: 482-913', next: 'lost', risk: 60, verdict: 'bad', why: 'Ese código servía para instalar tu WhatsApp en otro móvil.' },
+          { text: 'Espera… el SMS dice que no lo comparta con nadie', next: 'n4', risk: -10, verdict: 'good', why: 'Lees el aviso: ninguna votación necesita tu código.' },
+        ],
+      },
+      n3: {
+        msgs: [
+          { text: 'No hay enlace, va todo por WhatsApp jaja, es más rápido 😅' },
+          {
+            text: 'Tú solo pásame el código cuando te llegue, porfa, que voy el último',
+            flags: [{ t: 'pásame el código', n: 'Insiste en el código y evita darte una forma de comprobarlo.' }],
+          },
+        ],
+        choices: [
+          { text: 'Vale, ahí va cuando llegue', next: 'n2', risk: 30, verdict: 'bad', why: 'Cedes aunque no te ha dado ninguna prueba.' },
+          { text: 'Prefiero llamarte antes', next: 'n4', risk: 0, verdict: 'good', why: 'Quieres hablar con él por otra vía antes de hacer nada.' },
+        ],
+      },
+      n4: {
+        msgs: [
+          {
+            text: '¿Por qué tanta desconfianza? 😒 Somos amigos, ¿no? Si no me ayudas pierdo por tu culpa',
+            flags: [{ t: 'Si no me ayudas pierdo por tu culpa', n: 'Presión emocional: te hacen sentir mal por comprobar.' }],
+          },
+        ],
+        choices: [
+          { text: 'Perdona, perdona. Toma el código', next: 'lost', risk: 60, verdict: 'bad', why: 'La culpa es una técnica más, y has cedido ante ella.' },
+          { text: 'Te llamo a tu número de siempre y lo hablamos', next: 'safe', risk: -20, verdict: 'good', why: 'Llamar a su número de siempre desmonta el engaño.' },
+        ],
+      },
+      safe: {
+        end: 'safe',
+        title: 'Protegido',
+        text: 'Llamas a Lucas y no sabe nada de ningún concurso. Le habían robado la cuenta de WhatsApp y alguien la estaba usando para pedir códigos a todos sus contactos. Avisas en el grupo de clase y Lucas recupera su cuenta.',
+      },
+      lost: {
+        end: 'scammed',
+        title: 'Has perdido tu WhatsApp',
+        loss: 'Tu cuenta',
+        text: 'El código servía para registrar tu número en otro móvil. Te echan de tu cuenta y, con tu nombre y tu foto, piden códigos y Bizums a tus contactos. Recuperarla puede llevar días.',
+      },
+    },
   },
   {
-    kind: 'sms',
-    name: 'MiBanco',
-    sub: 'Mensaje de texto',
-    context: 'Acabas de intentar entrar en la app de tu banco.',
-    body: 'Tu código para iniciar sesión es 482913. No lo compartas con nadie: el banco nunca te lo pedirá.',
-    scam: false,
-    related: 'vishing',
-    flags: [
-      { t: 'No lo compartas con nadie', n: 'Un banco real te avisa de que no compartas el código.' },
-      { t: 'nunca te lo pedirá', n: 'No hay enlace ni te pide que hagas nada.' },
-    ],
-    why: 'Lo has pedido tú, así que es legítimo. El mismo SMS sin haber hecho nada sería una alarma: alguien intenta entrar en tu cuenta.',
+    id: 'zapatillas',
+    title: 'Vendo mis zapatillas',
+    channel: 'wallapop',
+    contact: { name: 'Marta_92', sub: 'Wallapop · 2 valoraciones' },
+    related: 'compraventa',
+    start: 'n1',
+    nodes: {
+      n1: {
+        msgs: [
+          {
+            text: '¡Hola! Me encantan las zapatillas 😍 Te pago los 60 € sin regatear',
+            flags: [{ t: 'sin regatear', n: 'Demasiado fácil: quien compra de verdad suele negociar o hacer preguntas.' }],
+          },
+          {
+            text: '¿Me das tu WhatsApp? Es que aquí la app me va fatal',
+            flags: [{ t: '¿Me das tu WhatsApp?', n: 'Sacarte de la app es el primer paso: fuera de Wallapop no tienes protección.' }],
+          },
+        ],
+        choices: [
+          { text: 'Claro, apunta mi número', next: 'n2', risk: 25, verdict: 'bad', why: 'Al salir de la app pierdes la protección de Wallapop.' },
+          { text: 'Mejor seguimos por aquí, que es más seguro', next: 'n3', risk: -5, verdict: 'good', why: 'Te quedas donde el pago está protegido.' },
+        ],
+      },
+      n2: {
+        channel: 'whatsapp',
+        msgs: [
+          { from: 'system', text: 'Marta te escribe ahora por WhatsApp' },
+          { text: '¡Listo! Ya te he pagado con Wallapop Envíos 💸' },
+          {
+            text: 'Para recibir el dinero entra aquí y pon los datos de tu tarjeta: wallapop-envios-pago.com/cobrar',
+            flags: [
+              { t: 'pon los datos de tu tarjeta', n: 'Para cobrar nunca tienes que dar tu tarjeta. El dinero llega dentro de la app.' },
+              { t: 'wallapop-envios-pago.com/cobrar', n: 'No es wallapop.com: es una web que imita a la oficial.' },
+            ],
+          },
+        ],
+        choices: [
+          { text: 'Entro y pongo los datos', next: 'n4', risk: 40, verdict: 'bad', why: 'Das tu tarjeta en una web falsa para "cobrar".' },
+          { text: '¿Por qué tengo que poner mi tarjeta para cobrar?', next: 'n5', risk: 0, verdict: 'good', why: 'Te paras a pensar: cobrar no debería costarte datos.' },
+        ],
+      },
+      n3: {
+        msgs: [
+          { text: 'Uff, es que no me deja pagar aquí 😩' },
+          {
+            text: 'Te mando un enlace de pago y listo, es lo mismo',
+            flags: [{ t: 'Te mando un enlace de pago', n: 'Insiste en sacarte de la app con un enlace de fuera.' }],
+          },
+        ],
+        choices: [
+          { text: 'Vale, mándamelo', next: 'n2', risk: 25, verdict: 'bad', why: 'Aceptas un enlace de pago de fuera de la app.' },
+          { text: 'Si no puedes pagar en la app, no hay venta. Lo siento', next: 'safe', risk: -15, verdict: 'good', why: 'Sin pago dentro de la app no hay trato.' },
+        ],
+      },
+      n4: {
+        msgs: [
+          {
+            from: 'system',
+            text: 'La web te pide también el código que te acaba de llegar de tu banco para «verificar el cobro»',
+            flags: [{ t: 'el código que te acaba de llegar de tu banco', n: 'Ese código autoriza un pago, no un cobro.' }],
+          },
+        ],
+        choices: [
+          { text: 'Pongo el código', next: 'scammed', risk: 40, verdict: 'bad', why: 'El código del banco autorizaba un cargo de 480 €.' },
+          { text: 'Cierro la web y llamo a mi banco', next: 'close', risk: -20, verdict: 'good', why: 'Cortas a tiempo y avisas al banco.' },
+        ],
+      },
+      n5: {
+        msgs: [
+          {
+            text: 'Es por seguridad, ahora Wallapop lo hace así 🙄 Date prisa, que me voy de viaje',
+            flags: [
+              { t: 'ahora Wallapop lo hace así', n: 'Inventa una norma para que parezca oficial.' },
+              { t: 'Date prisa', n: 'Prisa para que no lo compruebes.' },
+            ],
+          },
+        ],
+        choices: [
+          { text: 'Vale, vale, lo hago', next: 'n4', risk: 40, verdict: 'bad', why: 'La prisa te gana y das tu tarjeta.' },
+          { text: 'Wallapop nunca pide eso. Te bloqueo y te denuncio en la app', next: 'safe', risk: -20, verdict: 'good', why: 'Sabes que cobrar nunca exige tu tarjeta.' },
+        ],
+      },
+      safe: {
+        end: 'safe',
+        title: 'Protegido',
+        text: 'Te quedas dentro de Wallapop. Quien compra de verdad paga por la app, y tú cobras sin dar ningún dato de tu tarjeta. Denunciar el perfil ayuda a que no engañe a nadie más.',
+      },
+      close: {
+        end: 'safe',
+        title: 'Por los pelos',
+        text: 'Diste los datos de tu tarjeta, pero cortaste antes de dar el código. Llamas al banco, bloquean la tarjeta y te mandan otra. Sin el código no han podido cobrarte nada.',
+      },
+      scammed: {
+        end: 'scammed',
+        title: 'Te han estafado',
+        loss: '−480 €',
+        text: 'El "cobro" era un pago. Con tus datos y el código del banco te cargan 480 € en una tienda extranjera. Llamas al banco y denuncias, pero recuperar el dinero puede tardar semanas y no siempre se consigue.',
+      },
+    },
   },
   {
-    kind: 'call',
-    name: 'BANCO',
-    sub: 'Llamada entrante · número oficial',
-    body: '"Le llamamos de seguridad. Hemos detectado un acceso sospechoso. Para bloquearlo, dígame el código de 6 cifras que le acaba de llegar por SMS."',
-    scam: true,
-    related: 'vishing',
-    flags: [
-      { t: 'número oficial', n: 'El número que ves se puede falsificar (spoofing).' },
-      { t: 'acceso sospechoso', n: 'Te asustan para que actúes rápido.' },
-      { t: 'dígame el código de 6 cifras', n: 'Ningún banco te pide nunca un código. Sirve para autorizar el robo.' },
-    ],
-    why: 'Es vishing. Cuelga y llama tú al número que aparece en tu tarjeta.',
-  },
-  {
-    kind: 'email',
-    name: 'Google',
-    from: 'no-reply@accounts.google.com',
-    subject: 'Alerta de seguridad',
-    sub: 'para mí',
-    body: 'Se ha iniciado sesión en tu cuenta desde un nuevo dispositivo (Windows, Lugo). Si has sido tú, no tienes que hacer nada.',
-    scam: false,
-    related: 'phishing',
-    flags: [
-      { t: 'accounts.google.com', n: 'Dominio oficial de Google.' },
-      { t: 'no tienes que hacer nada', n: 'No te pide datos, ni pulsar enlaces, ni te mete prisa.' },
-    ],
-    why: 'Es un aviso real. Aun así, si dudas, revísalo entrando tú en myaccount.google.com.',
-  },
-  {
-    kind: 'email',
-    name: 'Agencia Tributaria',
-    from: 'notificaciones@agenciatributaria-reembolso.com',
-    subject: 'Reembolso pendiente: 186,40 €',
-    sub: 'para mí',
-    body: 'Tras revisar su declaración, tiene derecho a un reembolso de 186,40 €. Para recibirlo, confirme sus datos bancarios antes de 48 horas.',
-    cta: 'Acceder a mi reembolso',
-    scam: true,
-    related: 'phishing',
-    flags: [
-      { t: 'agenciatributaria-reembolso.com', n: 'Hacienda usa agenciatributaria.gob.es. Esto es una imitación.' },
-      { t: 'confirme sus datos bancarios', n: 'Hacienda ya tiene tus datos y nunca te los pide por correo.' },
-      { t: 'antes de 48 horas', n: 'Plazo inventado para meterte prisa.' },
-    ],
-    why: 'Es phishing que suplanta a Hacienda, muy típico en época de la renta.',
+    id: 'likes',
+    title: 'Gana 300 € dando likes',
+    channel: 'telegram',
+    contact: { name: 'Laura · Selección', sub: 'Telegram · visto hace un momento' },
+    related: 'empleo',
+    start: 'n1',
+    nodes: {
+      n1: {
+        msgs: [
+          {
+            text: 'Hola 😊 Buscamos gente para trabajar desde el móvil: das like a vídeos y ganas 3 € por like. Hasta 300 € al día',
+            flags: [{ t: 'Hasta 300 € al día', n: 'Mucho dinero por casi ningún esfuerzo: la señal número uno.' }],
+          },
+          {
+            text: '¿Te interesa? No hace falta experiencia ni edad mínima',
+            flags: [{ t: 'ni edad mínima', n: 'Ningún trabajo legal contrata así a menores, sin contrato ni permiso de sus padres.' }],
+          },
+        ],
+        choices: [
+          { text: '¡Sí! ¿Qué tengo que hacer?', next: 'n2', risk: 20, verdict: 'bad', why: 'Te lanzas sin saber quién está detrás.' },
+          { text: '¿Qué empresa sois? Pásame la web y el contrato', next: 'n3', risk: 0, verdict: 'good', why: 'Pides pruebas antes de nada.' },
+          { text: 'No me interesa', next: 'safe', risk: -15, verdict: 'good', why: 'Si es demasiado bueno para ser verdad, casi siempre es mentira.' },
+        ],
+      },
+      n2: {
+        msgs: [
+          { text: 'Fácil: da like a estos 3 vídeos y mándame una captura 📸' },
+          { from: 'system', text: 'Haces las tareas y te llegan 9 € por Bizum' },
+          {
+            text: '¡Genial! Para desbloquear las tareas VIP (50 € al día) tienes que hacer un depósito de 30 €. Lo recuperas hoy mismo',
+            flags: [{ t: 'tienes que hacer un depósito de 30 €', n: 'Un trabajo de verdad nunca te pide pagar. Los 9 € eran el anzuelo.' }],
+          },
+        ],
+        choices: [
+          { text: 'Vale, te hago un Bizum de 30 €', next: 'n4', risk: 30, verdict: 'bad', why: 'Pagas para "trabajar": ahí empieza la estafa.' },
+          { text: 'Si es un trabajo, ¿por qué tengo que pagar yo?', next: 'n5', risk: 0, verdict: 'good', why: 'Detectas que algo no cuadra.' },
+        ],
+      },
+      n3: {
+        msgs: [
+          {
+            text: 'No hay contrato, es freelance 😉 Pero tranquilo, ya le hemos pagado a 2.000 personas',
+            flags: [
+              { t: 'No hay contrato', n: 'Sin contrato no hay trabajo, ni nada que te proteja.' },
+              { t: 'ya le hemos pagado a 2.000 personas', n: 'Una cifra imposible de comprobar para darte confianza.' },
+            ],
+          },
+        ],
+        choices: [
+          { text: 'Bueno, vale, pruebo', next: 'n2', risk: 20, verdict: 'bad', why: 'Sigues adelante aunque no hay empresa ni contrato.' },
+          { text: 'Sin contrato no. Adiós', next: 'safe', risk: -15, verdict: 'good', why: 'Sin contrato no hay trabajo.' },
+        ],
+      },
+      n4: {
+        msgs: [
+          {
+            text: 'Uy, el sistema ha detectado un error en tu tarea 😬 Para recuperar tu dinero tienes que pagar 90 € más',
+            flags: [{ t: 'tienes que pagar 90 € más', n: 'Cada pago lleva a otro: el dinero no vuelve nunca.' }],
+          },
+          {
+            text: 'Si no tienes dinero no pasa nada: déjanos usar tu cuenta del banco para recibir unos pagos de la empresa y te quedas el 10 %',
+            flags: [{ t: 'déjanos usar tu cuenta del banco', n: 'Te están captando como mula: moverías dinero robado y la responsable sería tu cuenta.' }],
+          },
+        ],
+        choices: [
+          { text: 'Pago los 90 € para recuperar lo mío', next: 'money', risk: 30, verdict: 'bad', why: 'Pagar para recuperar lo pagado es otra trampa.' },
+          { text: 'Vale, os dejo mi cuenta', next: 'mule', risk: 50, verdict: 'bad', why: 'Prestar tu cuenta te convierte en mula de dinero.' },
+          { text: 'Paro, se lo cuento a mis padres y lo denuncio', next: 'stop', risk: -30, verdict: 'good', why: 'Cortar y pedir ayuda a un adulto es lo correcto.' },
+        ],
+      },
+      n5: {
+        msgs: [
+          {
+            text: 'Porque así funciona la plataforma 🙄 Si no depositas, pierdes los 9 € que ya has ganado y tu puesto',
+            flags: [{ t: 'pierdes los 9 € que ya has ganado', n: 'Amenaza para que no quieras perder lo que ya "has ganado".' }],
+          },
+        ],
+        choices: [
+          { text: 'Vale, deposito', next: 'n4', risk: 30, verdict: 'bad', why: 'El miedo a perder 9 € te hace pagar 30.' },
+          { text: 'Me quedo con los 9 € y me voy. Os denuncio', next: 'safe9', risk: -20, verdict: 'good', why: 'Te vas antes de pagar nada.' },
+        ],
+      },
+      safe: {
+        end: 'safe',
+        title: 'Protegido',
+        text: 'Una oferta que paga mucho por casi nada, sin empresa ni contrato, es una estafa de tareas. El INCIBE y la Policía Nacional han avisado muchas veces de ellas. Bloquear y no responder es lo mejor.',
+      },
+      safe9: {
+        end: 'safe',
+        title: 'Protegido',
+        text: 'Te vas a tiempo. Esos 9 € eran el anzuelo: el negocio de los estafadores empieza cuando te piden pagar. Denuncia el perfil en Telegram y, si quieres, en la Policía Nacional.',
+      },
+      stop: {
+        end: 'safe',
+        title: 'Has parado a tiempo',
+        loss: '−21 €',
+        text: 'Pierdes los 30 € del depósito menos los 9 € que te dieron, pero cortas antes de que vaya a más. Contárselo a un adulto y denunciar es lo correcto: no tienes nada de lo que avergonzarte.',
+      },
+      money: {
+        end: 'scammed',
+        title: 'Te han estafado',
+        loss: '−111 €',
+        text: 'Después de los 90 € siempre aparece otro "error" que pagar. El dinero no vuelve: pierdes los 120 € que has pagado menos los 9 € del anzuelo.',
+      },
+      mule: {
+        end: 'scammed',
+        title: 'Te han convertido en mula',
+        loss: 'Problema legal',
+        text: 'Por tu cuenta pasan miles de euros robados a otras personas. Cuando la Policía investiga, la cuenta es la tuya: ser mula de dinero es un delito de blanqueo, aunque no supieras de dónde venía el dinero.',
+      },
+    },
   },
 ]
 
