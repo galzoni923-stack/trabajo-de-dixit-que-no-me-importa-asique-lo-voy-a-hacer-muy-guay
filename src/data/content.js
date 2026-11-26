@@ -785,7 +785,7 @@ export const sources = [
 ]
 
 export const credits = {
-  authors: ['Juan Castedo', 'Nombre Compañero/a'],
+  authors: ['Juan Castedo', 'Mario Piñeiro'],
   course: '4º ESO · Colegio Diocesano María Auxiliadora · Lugo',
   year: '2026',
 }
