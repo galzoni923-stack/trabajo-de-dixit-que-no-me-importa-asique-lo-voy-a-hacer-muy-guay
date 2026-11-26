@@ -54,6 +54,13 @@ El diseño se ha repasado con la skill [unslop](https://github.com/heydamir/unsl
 - **Ejemplos reales (2 p):** casos de España y Europa (DGT, "Hola mamá", Hospital Clínic, Almendralejo, CNMV...).
 - **Diseño (2 p) y ortografía (1 p).**
 
-## Publicar
+## Publicar en Netlify
 
-Con GitHub Pages: *Settings → Pages → Source: GitHub Actions*. Cada push a `main` publica la web.
+La web está preparada para publicarse en **https://ciberestafas.castedolabs.com**. La configuración está en `netlify.toml` (compilación, versión de Node y cabeceras).
+
+1. En Netlify: **Add new site → Import an existing project → GitHub** y elige este repositorio. Como rama de producción, la que vayas a publicar (por ejemplo `main`). Netlify lee `netlify.toml`, así que no hay que tocar nada más.
+2. En el sitio: **Domain management → Add a domain** → `ciberestafas.castedolabs.com`.
+3. En el proveedor DNS de `castedolabs.com`, crea un registro **CNAME**: nombre `ciberestafas`, valor `<nombre-del-sitio>.netlify.app`.
+4. Cuando el DNS se propague, Netlify activa HTTPS solo (Let's Encrypt). Marca el dominio como principal para que `*.netlify.app` redirija a él.
+
+Cada push a la rama de producción vuelve a publicar la web.
